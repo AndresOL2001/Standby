@@ -2,12 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:standby/services/NotificationsServices.dart';
 
 import '../src/views/Map.dart';
 
 late SharedPreferences sharedPreferences;
 
-void main() {
+void main() async{
+  //Para las notificaciones se hizo async el metodo main
+
+  //Para ejecutar las inicializaciones de las notificaciones
+  WidgetsFlutterBinding();
+  await initNotifications();
+  // ------------------------------------------------------
+
+  //Correr la app
   runApp(const MyApp());
 }
 

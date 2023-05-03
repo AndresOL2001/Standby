@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:standby/services/NotificationsServices.dart';
 
 class Map extends StatefulWidget {
   const Map({Key? key}) : super(key: key);
@@ -15,12 +16,15 @@ class Map extends StatefulWidget {
   State<Map> createState() => MapState();
 }
 
-class MapState extends State<Map> {
+class MapState extends State<Map> with WidgetsBindingObserver{
   final Completer<GoogleMapController> _controller = Completer();
   static double distance = 0;
   static LatLng destination = LatLng(29.100337673256437, -110.99760613426835);
   List<LatLng> polylineCoordinates = [];
   LocationData? currentLocation;
+
+  bool entroDistanciaMedia = false;
+  bool entroDistanciacorta = false;
 
 //Obtenemos ubicacion en tiempo real
   void getCurrentLocation() async {
@@ -47,6 +51,22 @@ class MapState extends State<Map> {
             cos(lat1 * p) * cos(lat2 * p) * 
             (1 - cos((lon2 - lon1) * p))/2;
       distance =  12742 * asin(sqrt(a));
+
+//----------- Parte para las notificaciones segun la distancia ---------------------
+      if( distance > 0.35 && entroDistanciaMedia ) entroDistanciaMedia = false;
+      if( distance > 0.1 && entroDistanciacorta ) entroDistanciacorta = false;
+
+      if( (distance > 0.01 && distance < 0.35) && !entroDistanciaMedia ){
+        notificacionDistanciaMedia();
+        entroDistanciaMedia = true;
+      }
+
+      if( distance < 0.01 && !entroDistanciacorta ){
+        notificacionDistanciaCorta();
+        entroDistanciacorta = true;
+      }
+//-----------------------------------------------------------------------------------
+
       setState(() {});
     }
 
@@ -78,7 +98,24 @@ class MapState extends State<Map> {
   void initState() {
     getCurrentLocation();
     getPolyPoints();
+    WidgetsBinding.instance.addObserver(this); //Para el ciclo de vida de la app
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this); //Para cerrar el observador del ciclo de vida
+    super.dispose();
+  }
+
+  //metodo para ver el estado de vida
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Aquí puedes interactuar con el estado del ciclo de vida de la aplicación.
+    //print("El estado del ciclo de vida de la aplicación cambió a: $state");
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      mostrarNotificacion("La aplicacion se esta ejecutando en segundo plano");
+    }
   }
 
   @override
@@ -90,15 +127,20 @@ class MapState extends State<Map> {
             style: TextStyle(color: Colors.black, fontSize: 16),
           ),
         ),
-        body: Container(
-          child: Stack(children: <Widget>[
-            Container(
-                child: SizedBox(
-              width: double.infinity,
-              height: 400,
-              child: currentLocation == null
-                  ? const Center(child: Text("Loading"))
-                  : GoogleMap(
+        body: Stack(children: <Widget>[
+          SizedBox(
+            width: double.infinity,
+            height: 400,
+            child: currentLocation == null
+            ? const Center(child: Text("Loading"))
+            : _googleMap(),
+          ),
+          ListTile(title: Text("Manten presionado el marcador mas lejano para moverlo a tu proximo destino - Te encuentras a $distance km de distancia."))
+        ]));
+  }
+
+  _googleMap(){
+    return GoogleMap(
                       initialCameraPosition: CameraPosition(
                           target: LatLng(currentLocation!.latitude!,
                               currentLocation!.longitude!),
@@ -128,10 +170,8 @@ class MapState extends State<Map> {
                       onMapCreated: (mapController) {
                         _controller.complete(mapController);
                       },
-                    ),
-            )),
-            ListTile(title: Text("Manten presionado el marcador mas lejano para moverlo a tu proximo destino - Te encuentras a $distance km de distancia."))
-          ]),
-        ));
+                    );
   }
+
+  
 }

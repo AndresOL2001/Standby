@@ -119,7 +119,7 @@ class MapState extends State<Map> with WidgetsBindingObserver{
     return Scaffold(
         appBar: AppBar(
           title: const Text(
-            "Stand By v0.0.5",
+            "Stand By v0.3.4",
             style: TextStyle(color: Colors.black, fontSize: 16),
           ),
         ),

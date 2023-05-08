@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:standby/services/NotificationsServices.dart';
 
 import '../src/views/Map.dart';
@@ -10,11 +10,19 @@ late SharedPreferences sharedPreferences;
 
 void main() async{
   //Para las notificaciones se hizo async el metodo main
-
   //Para ejecutar las inicializaciones de las notificaciones
   WidgetsFlutterBinding();
+  WidgetsFlutterBinding.ensureInitialized();
+  await Permission.notification.isDenied.then(
+    (value){
+      if( value ){
+        Permission.notification.request();
+      }
+    }
+  );
   await initNotifications();
   // ------------------------------------------------------
+  sharedPreferences = await SharedPreferences.getInstance();
 
   //Correr la app
   runApp(const MyApp());
@@ -36,7 +44,7 @@ class MyApp extends StatelessWidget {
           elevation: 0,
         ),
       ),
-      home: const Map(),
+      home: Map(),
     );
   }
 }

@@ -10,7 +10,6 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:standby/main.dart';
 
 import 'package:standby/services/NotificationsServices.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -33,7 +32,7 @@ class MapState extends State<Map> with WidgetsBindingObserver{
   static bool entroDistanciaMedia = false;
   static bool entroDistanciacorta = false;
 
-  String estadoService = "Stop";
+  IconData icono = Icons.stop;
 
 
 //Obtenemos ubicacion en tiempo real
@@ -114,78 +113,152 @@ class MapState extends State<Map> with WidgetsBindingObserver{
     //print("El estado del ciclo de vida de la aplicación cambió a: $state");
   }
 
+
+final TextEditingController latitudController = TextEditingController();
+  final TextEditingController longitudController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            "Stand By v0.3.4",
-            style: TextStyle(color: Colors.black, fontSize: 16),
-          ),
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        body: Stack(children: <Widget>[
-            SizedBox(
+      floatingActionButton: FloatingActionButton(
+        elevation: 0,
+        backgroundColor:Colors.green,
+        child: Icon(icono),
+        onPressed: () async {
+
+          final service = FlutterBackgroundService();
+          bool isRunning = await service.isRunning();
+          if( isRunning ){
+            icono = Icons.play_arrow;
+            service.invoke("stopService");
+          } else {
+            icono = Icons.stop;
+            service.startService();
+          }
+          setState(() { });
+
+        }
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+
+      body: Stack(
+        children:[
+
+          Expanded(
+            child: SizedBox(
               width: double.infinity,
-              height: 400,
+              height: double.infinity,
               child: currentLocation == null
-              ? const Center(child: Text("Loading"))
-              : _googleMap(),
+                  ? const Center(child: Text("Loading"))
+                  : _googleMap(),
             ),
-            ListTile(title: Text("Manten presionado el marcador mas lejano para moverlo a tu proximo destino - Te encuentras a $_distance km de distancia.")),
+          ),
 
-            Positioned(
-              bottom: 50,
-              right: 20,
-              child: ElevatedButton(
-                child: const Text("Foreground"),
-                onPressed: (){
-                  FlutterBackgroundService().invoke('setAsForeground');
-                },
-              )
+          Positioned(
+            child: Container(
+              margin: EdgeInsets.only(top: 50.0),
+              height: MediaQuery.of(context).size.width * 0.53,
+              padding: const EdgeInsets.all(16),
+              color: Color.fromARGB(0, 255, 255, 255),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * 0.9,
+                    child: TextField(
+                      enabled: false,
+                      maxLines: 3,
+                      controller: latitudController,
+                      decoration: InputDecoration(
+                        labelText: 'Lat: ${destination.latitude.toString()}\n\nLong: ${destination.longitude.toString()}',
+                        hintText: 'Ingrese su Latitud',
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black, width: 1.0),
+                        ),
+                        filled: true, // Habilitar el relleno del fondo
+                        fillColor: Colors.white, // Color del fondo
+                      ),
+                    ),
+                  ),
+                ),
+                /*
+                  Align(
+                    alignment: Alignment.center,
+                    child: Container(
+                      margin: EdgeInsets.only(top: 10.0),
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      child: TextField(
+                        controller: longitudController,
+                        decoration: InputDecoration(
+                          labelText: currentLocation!.altitude.toString(),
+                          hintText: 'Ingrese su Longitud',
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black, width: 1.0),
+                        ),
+                        filled: true, // Habilitar el relleno del fondo
+                        fillColor: Colors.white, // Color del fondo
+                      ),
+                      ),
+                    ),
+                  ),
+                  */
+
+                  /*
+                  Center(
+                    child: Container(
+                      margin: EdgeInsets.only(top: 10.0),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Acción al hacer clic en el botón
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(
+                              vertical: 10.0, horizontal: 50.0),
+                          backgroundColor: Colors.green,
+                        ),
+                        child: Text(
+                          'Guardar',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                  */
+                ],
+              ),
             ),
-
-            Positioned(
-              bottom: 50,
-              left: 20,
-              child: ElevatedButton(
-                child: const Text("Background"),
-                onPressed: () async {
-                  //FlutterBackgroundService().invoke('setAsBackground');
-                  await initializeService();
-                },
-              )
-            ),
-
-            Positioned(
-              bottom: 20,
-              left: 150,
-              child: ElevatedButton(
-                child: Text("$estadoService"),
-                onPressed: () async{
-                  final service = FlutterBackgroundService();
-                  bool isRunning = await service.isRunning();
-                  if( isRunning ){
-                    estadoService = "Start";
-                    service.invoke("stopService");
-                  } else {
-                    estadoService = "Stop";
-                    service.startService();
-                  }
-
-                  setState(() { });
-
-                },
-              )
-            ),
-
-          ]
-        )
+          ),
+          
+        ],
+      ),
     );
   }
 
+
+
   _googleMap(){
     return GoogleMap(
+                          circles: <Circle>{
+                      Circle(
+                        circleId: CircleId('circle_1'),
+                        center: LatLng(destination.latitude, destination.longitude),
+                        radius: 800, // Radio en metros
+                        fillColor: Colors.blue.withOpacity(0.2), // Color de relleno
+                        strokeColor: Colors.blue, // Color de borde
+                        strokeWidth: 2, // Ancho de borde en píxeles
+                      ),
+
+                      Circle(
+                        circleId: CircleId('circle_2'),
+                        center: LatLng(destination.latitude, destination.longitude),
+                        radius: 50, // Radio en metros
+                        fillColor: Colors.red.withOpacity(0.2), // Color de relleno
+                        strokeColor: Colors.red, // Color de borde
+                        strokeWidth: 2, // Ancho de borde en píxeles
+                      ),
+                    },
                       initialCameraPosition: CameraPosition(
                           target: LatLng(currentLocation!.latitude!,
                               currentLocation!.longitude!),
@@ -194,6 +267,7 @@ class MapState extends State<Map> with WidgetsBindingObserver{
                         Polyline(
                             polylineId: PolylineId("route"),
                             points: polylineCoordinates,
+                            color: Colors.green, // Cambia el color de la línea a azul
                             width: 6)
                       },
                       markers: {
@@ -265,27 +339,35 @@ class MapState extends State<Map> with WidgetsBindingObserver{
       await sharedPreferences.reload();
 
       double? distanciaBuena = sharedPreferences.getDouble("distanceee");
+      String distanciaRecortada = distanciaBuena!.toStringAsFixed(3);
+
+      
+      if( distanciaBuena < 1.0 ){
+        distanciaRecortada = "${double.parse(distanciaRecortada) * 1000} mts";
+      } else {
+        distanciaRecortada = "$distanciaRecortada km";
+      }
 
       if( service is AndroidServiceInstance ){
         if( await service.isForegroundService() ){
           service.setForegroundNotificationInfo(
-            title: "Prueba", 
-            content: "Estas a $distanciaBuena km"
+            title: "Standby en segundo plano", 
+            content: "Estas a $distanciaRecortada"
           );
         }
       }
       //Operaciones que no son visibles pal usuario
 
       //----------- Parte para las notificaciones segun la distancia ---------------------
-      if( distanciaBuena! > 0.35 && entroDistanciaMedia ) entroDistanciaMedia = false;
+      if( distanciaBuena! > 0.8 && entroDistanciaMedia ) entroDistanciaMedia = false;
       if( distanciaBuena > 0.1 && entroDistanciacorta ) entroDistanciacorta = false;
 
-      if( (distanciaBuena > 0.01 && distanciaBuena < 0.35) && !entroDistanciaMedia ){
+      if( (distanciaBuena > 0.01 && distanciaBuena < 0.8) && !entroDistanciaMedia ){
         notificacionDistanciaMedia();
         entroDistanciaMedia = true;
       }
 
-      if( distanciaBuena < 0.01 && !entroDistanciacorta ){
+      if( distanciaBuena < 0.02 && !entroDistanciacorta ){
         notificacionDistanciaCorta();
         entroDistanciacorta = true;
       }

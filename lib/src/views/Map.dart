@@ -25,19 +25,23 @@ class Map extends StatefulWidget {
 class MapState extends State<Map> with WidgetsBindingObserver{
   final Completer<GoogleMapController> _controller = Completer();
   double _distance = 0;
-  LatLng destination = LatLng(29.100337673256437, -110.99760613426835);
+  LatLng destination = LatLng(29.106903, -111.030132);
+  LatLng caseta = LatLng(29.106940, -111.029684);
   List<LatLng> polylineCoordinates = [];
-  LocationData? currentLocation;
+  LocationData currentLocation =LocationData.fromMap({
+        "latitude": 29.106962,
+        "longitude": -111.029630
+      });
 
-  static bool entroDistanciaMedia = false;
-  static bool entroDistanciacorta = false;
-
+  static bool entroEnCasa = false;
+  static bool entroEnCaseta = false;
+  static bool notificacionEnviada = false;
   IconData icono = Icons.stop;
 
 
 //Obtenemos ubicacion en tiempo real
-  void getCurrentLocation() async {
-    Location location = Location();
+  void getCurrentLocation()  {
+   /*  Location location = Location();
     location.getLocation().then(
       (location) {
         currentLocation = location;
@@ -47,31 +51,42 @@ class MapState extends State<Map> with WidgetsBindingObserver{
     GoogleMapController googleMapController = await _controller.future;
     location.onLocationChanged.listen((newLoc) {
       currentLocation = newLoc;
-      calculateDistance(currentLocation!.latitude!, currentLocation!.longitude!, destination.latitude, destination.longitude);
+      calculateDistance(currentLocation!.latitude!, currentLocation!.longitude!, caseta.latitude, caseta.longitude);
       setState(() {});
-    });
+    }); */
   }
 
   //Calculamos distancia entre los 2 puntos
-    Future<void> calculateDistance(lat1, lon1, lat2, lon2) async {
+    Future<void> calculateDistance(lat1, lon1, lat2, lon2,valor) async {
+      print(valor);
       //distance = 0;
       var p = 0.017453292519943295;
       var a = 0.5 - cos((lat2 - lat1) * p)/2 + 
             cos(lat1 * p) * cos(lat2 * p) * 
             (1 - cos((lon2 - lon1) * p))/2;
       _distance =  12742 * asin(sqrt(a));
+      print(_distance);
 
 
       var sharedPreferences = await SharedPreferences.getInstance();
-      sharedPreferences.setDouble('distanceee', _distance);
+
+      if(valor == "caseta"){
+        print("Entro en caseta");
+        sharedPreferences.setDouble('distanciaCaseta', _distance);
+
+      }else{
+        print("Entro en resindencial");
+        sharedPreferences.setDouble('distanciaResidencial', _distance);
+
+      }
       setState(() {});
     }
 
     //Trazamos camino
   void getPolyPoints() async {
     polylineCoordinates = [];
-    await Future.delayed(const Duration(seconds: 4));
-
+/*     await Future.delayed(const Duration(seconds: 4));
+ */
     PolylinePoints polylinePoints = PolylinePoints();
 
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
@@ -84,7 +99,8 @@ class MapState extends State<Map> with WidgetsBindingObserver{
         (PointLatLng point) =>
             polylineCoordinates.add(LatLng(point.latitude, point.longitude)),
       );
-      calculateDistance(currentLocation!.latitude!, currentLocation!.longitude!, destination.latitude, destination.longitude);
+      await calculateDistance(currentLocation.latitude!, currentLocation.longitude!, caseta.latitude, caseta.longitude,"caseta");
+      await calculateDistance(currentLocation.latitude!, currentLocation.longitude!, destination.latitude, destination.longitude,"residencial");
       setState(() {});
     }
 
@@ -93,7 +109,7 @@ class MapState extends State<Map> with WidgetsBindingObserver{
 //Constructor
   @override
   initState() {
-    getCurrentLocation();
+    //getCurrentLocation();
     getPolyPoints();
     initializeService();
     WidgetsBinding.instance.addObserver(this); //Para el ciclo de vida de la app
@@ -183,49 +199,6 @@ final TextEditingController latitudController = TextEditingController();
                     ),
                   ),
                 ),
-                /*
-                  Align(
-                    alignment: Alignment.center,
-                    child: Container(
-                      margin: EdgeInsets.only(top: 10.0),
-                      width: MediaQuery.of(context).size.width * 0.9,
-                      child: TextField(
-                        controller: longitudController,
-                        decoration: InputDecoration(
-                          labelText: currentLocation!.altitude.toString(),
-                          hintText: 'Ingrese su Longitud',
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black, width: 1.0),
-                        ),
-                        filled: true, // Habilitar el relleno del fondo
-                        fillColor: Colors.white, // Color del fondo
-                      ),
-                      ),
-                    ),
-                  ),
-                  */
-
-                  /*
-                  Center(
-                    child: Container(
-                      margin: EdgeInsets.only(top: 10.0),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // Acción al hacer clic en el botón
-                        },
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(
-                              vertical: 10.0, horizontal: 50.0),
-                          backgroundColor: Colors.green,
-                        ),
-                        child: Text(
-                          'Guardar',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ),
-                  */
                 ],
               ),
             ),
@@ -242,18 +215,18 @@ final TextEditingController latitudController = TextEditingController();
     return GoogleMap(
                           circles: <Circle>{
                       Circle(
-                        circleId: CircleId('circle_1'),
-                        center: LatLng(destination.latitude, destination.longitude),
-                        radius: 800, // Radio en metros
+                        circleId: CircleId('geovalla_caseta'),
+                        center: LatLng(caseta.latitude, caseta.longitude),
+                        radius: 5, // Radio en metros
                         fillColor: Colors.blue.withOpacity(0.2), // Color de relleno
                         strokeColor: Colors.blue, // Color de borde
                         strokeWidth: 2, // Ancho de borde en píxeles
                       ),
 
                       Circle(
-                        circleId: CircleId('circle_2'),
+                        circleId: CircleId('geovalla_residencial'),
                         center: LatLng(destination.latitude, destination.longitude),
-                        radius: 50, // Radio en metros
+                        radius: 49, // Radio en metros
                         fillColor: Colors.red.withOpacity(0.2), // Color de relleno
                         strokeColor: Colors.red, // Color de borde
                         strokeWidth: 2, // Ancho de borde en píxeles
@@ -275,15 +248,29 @@ final TextEditingController latitudController = TextEditingController();
                           markerId: const MarkerId("currentLocation"),
                           position: LatLng(currentLocation!.latitude!,
                               currentLocation!.longitude!),
+                              draggable: true,
+                              onDragEnd: (value){
+                            currentLocation = LocationData.fromMap({
+                            "latitude": value.latitude,
+                            "longitude": value.longitude
+                          });
+
+                            getPolyPoints();
+                          },
                         ),
                         Marker(
                           markerId: MarkerId("destination"),
                           position: destination,
-                          draggable: true,
+                          draggable: false,
                           onDragEnd: (value){
                             destination = value;
                             getPolyPoints();
                           },
+                        ),
+                         Marker(
+                          markerId: MarkerId("userLocation"),
+                          position: caseta,
+                          draggable: false
                         ),
                       },
                       onMapCreated: (mapController) {
@@ -291,6 +278,7 @@ final TextEditingController latitudController = TextEditingController();
                       },
                     );
   }
+
 
   
   Future <void> initializeService() async{
@@ -317,7 +305,7 @@ final TextEditingController latitudController = TextEditingController();
   }
 
   @pragma('vm-entry-point')
-  static void onStart(ServiceInstance service) async{
+   static void onStart(ServiceInstance service) async{
     DartPluginRegistrant.ensureInitialized();
     if( service is AndroidServiceInstance ){
 
@@ -337,12 +325,12 @@ final TextEditingController latitudController = TextEditingController();
     Timer.periodic(const Duration(seconds: 3), (timer) async{
       var sharedPreferences = await SharedPreferences.getInstance();
       await sharedPreferences.reload();
-
-      double? distanciaBuena = sharedPreferences.getDouble("distanceee");
-      String distanciaRecortada = distanciaBuena!.toStringAsFixed(3);
+      double? distanciaCaseta = sharedPreferences.getDouble("distanciaCaseta");
+      double? distanciaResidencial = sharedPreferences.getDouble("distanciaResidencial");
+      String distanciaRecortada = distanciaCaseta!.toStringAsFixed(3);
 
       
-      if( distanciaBuena < 1.0 ){
+      if( distanciaCaseta < 1.0 ){
         distanciaRecortada = "${double.parse(distanciaRecortada) * 1000} mts";
       } else {
         distanciaRecortada = "$distanciaRecortada km";
@@ -357,20 +345,36 @@ final TextEditingController latitudController = TextEditingController();
         }
       }
       //Operaciones que no son visibles pal usuario
-
+    
       //----------- Parte para las notificaciones segun la distancia ---------------------
-      if( distanciaBuena! > 0.8 && entroDistanciaMedia ) entroDistanciaMedia = false;
-      if( distanciaBuena > 0.1 && entroDistanciacorta ) entroDistanciacorta = false;
 
-      if( (distanciaBuena > 0.01 && distanciaBuena < 0.8) && !entroDistanciaMedia ){
-        notificacionDistanciaMedia();
-        entroDistanciaMedia = true;
+    if(distanciaResidencial! <= 0.049){
+      entroEnCasa = true;
+    }else{
+      entroEnCasa = false;
+      notificacionEnviada = false;
+    }
+
+     if(distanciaCaseta <= 0.005){
+      entroEnCaseta = true;
+    }else{
+      entroEnCaseta = false;
       }
 
-      if( distanciaBuena < 0.02 && !entroDistanciacorta ){
-        notificacionDistanciaCorta();
-        entroDistanciacorta = true;
+      if(entroEnCasa && entroEnCaseta && notificacionEnviada == false){
+        notificacionEnviada = true;
+        print("NOTIFICACION ENVIADA!!");
+        mostrarNotificacion("ENTRANDO A LA RESIDENCIAL");
+      }else{
+        print("NOTIFICACION NO ENVIADA!!");
+
       }
+    
+    print("Esta en casa:$entroEnCasa");
+    print("Esta en caseta:$entroEnCaseta");
+
+
+  
 //-----------------------------------------------------------------------------------
       
       service.invoke("update");

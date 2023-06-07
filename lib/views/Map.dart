@@ -58,7 +58,6 @@ class MapState extends State<Map> with WidgetsBindingObserver{
 
   //Calculamos distancia entre los 2 puntos
     Future<void> calculateDistance(lat1, lon1, lat2, lon2,valor) async {
-      print(valor);
       //distance = 0;
       var p = 0.017453292519943295;
       var a = 0.5 - cos((lat2 - lat1) * p)/2 + 
@@ -234,7 +233,7 @@ final TextEditingController latitudController = TextEditingController();
                     },
                       initialCameraPosition: CameraPosition(
                           target: LatLng(currentLocation!.latitude!,
-                              currentLocation!.longitude!),
+                              currentLocation.longitude!),
                           zoom: 15),
                       polylines: {
                         Polyline(
@@ -247,7 +246,7 @@ final TextEditingController latitudController = TextEditingController();
                         Marker(
                           markerId: const MarkerId("currentLocation"),
                           position: LatLng(currentLocation!.latitude!,
-                              currentLocation!.longitude!),
+                              currentLocation.longitude!),
                               draggable: true,
                               onDragEnd: (value){
                             currentLocation = LocationData.fromMap({

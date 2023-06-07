@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:standby/services/NotificationsServices.dart';
 
-import '../src/views/Map.dart';
+import 'package:standby/widgets/screens.dart';
+
+import 'views/Map.dart';
 
 late SharedPreferences sharedPreferences;
 
@@ -38,13 +39,20 @@ class MyApp extends StatelessWidget {
       title: 'Stand By 0.5.5',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.indigo,
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.indigo,
           elevation: 0,
         ),
       ),
-      home: Map(),
+            initialRoute: 'login',
+      routes: {
+        'login': ( _ ) => const LoginScreen(),
+        'home' : ( _ ) => const Home(),
+        'mapa' : ( _ ) => const Map(),
+        'registro_usuario' : ( _ ) => const RegistroUsuario(),
+        'accesos' : ( _ ) => Accesos(),
+      },
     );
   }
 }

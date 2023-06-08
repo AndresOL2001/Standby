@@ -90,7 +90,7 @@ class MapState extends State<Map> with WidgetsBindingObserver{
 
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
         "AIzaSyCNmpD_f-vJFakrjcL0X5ugzf9tKjZOM6I",
-        PointLatLng(currentLocation!.latitude!, currentLocation!.longitude!),
+        PointLatLng(currentLocation.latitude!, currentLocation.longitude!),
         PointLatLng(destination.latitude, destination.longitude));
 
     if (result.points.isNotEmpty) {
@@ -232,7 +232,7 @@ final TextEditingController latitudController = TextEditingController();
                       ),
                     },
                       initialCameraPosition: CameraPosition(
-                          target: LatLng(currentLocation!.latitude!,
+                          target: LatLng(currentLocation.latitude!,
                               currentLocation.longitude!),
                           zoom: 15),
                       polylines: {

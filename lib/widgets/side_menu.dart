@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:standby/widgets/switch_habilitar.dart';
 
 class SideMenu extends StatelessWidget {
   const SideMenu({super.key});
@@ -10,6 +11,16 @@ class SideMenu extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           const _DrawerHeader(),
+
+          Container(
+            padding: const EdgeInsets.only(left: 20),
+            child: Row(
+              children: const [
+                Text("Hablitar/Deshabilitar"),
+                SwtichHabilitar()
+              ],
+            ),
+          ),
 
           Container(
             padding: const EdgeInsets.only(left: 20, top: 10, bottom: 10),

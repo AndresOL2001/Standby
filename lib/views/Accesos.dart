@@ -3,6 +3,7 @@ import 'package:standby/model/acceso.dart';
 
 import '../widgets/accesos_radio.dart';
 
+// ignore: must_be_immutable
 class Accesos extends StatelessWidget {
   Accesos({super.key});
 

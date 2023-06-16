@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class Acceso {
   final String nombre;
   final String ubicacion;

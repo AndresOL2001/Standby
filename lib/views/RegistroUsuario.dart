@@ -141,8 +141,8 @@ class RegistroUsuario extends StatelessWidget {
                   autocorrect: false,
                   keyboardType: TextInputType.text,
                   decoration: InputDecorations.authInputDecoration(
-                    hintText: 'Contraseña',
-                    labelText: '****',
+                    hintText: '*****',
+                    labelText: 'Contraseña',
                     prefixIcon: Icons.lock
                   ),
                   initialValue: user.contrasena,

@@ -25,8 +25,8 @@ class Home extends StatelessWidget {
 
               Container(
                 margin: const EdgeInsets.only(bottom: 10),
-                child: Column(
-                  children: const [
+                child: const Column(
+                  children: [
                     _InfoUser(topico: "Usuario: ", info: "0123"),
                     _InfoUser(topico: "No. Serie Activado: ", info: "Cerrada Real de Sevilla. Hermosillo, Sonora"),
                     _InfoUser(topico: "Plan vigente", info: ""),

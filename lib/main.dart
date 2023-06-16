@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:standby/provider/login_form_provider.dart';
-import 'package:standby/provider/usuario_form_provider.dart';
-import 'package:standby/services/NotificationsServices.dart';
-import 'package:standby/services/auth_service.dart';
+
+import 'package:standby/provider/providers.dart';
+
+import 'package:standby/services/services.dart';
+import 'package:standby/shared_preferences/shared_preferences.dart';
 
 import 'package:standby/widgets/screens.dart';
 
 import 'views/Map.dart';
 
-late SharedPreferences sharedPreferences;
+//late SharedPreferences sharedPreferences;
 
 void main() async{
   //Para las notificaciones se hizo async el metodo main
@@ -27,7 +29,8 @@ void main() async{
   );
   await initNotifications();
   // ------------------------------------------------------
-  sharedPreferences = await SharedPreferences.getInstance();
+  //sharedPreferences = await SharedPreferences.getInstance();
+  await Preferences.init();
 
   //Correr la app
 
@@ -40,14 +43,16 @@ void main() async{
         // Agrega otros proveedores aquí
       ],
         builder: (context, child) {
-          return const MyApp();
+          return MyApp();
       }
       )
   );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  MyApp({Key? key}) : super(key: key);
+  
+  bool isLoggedIn = Preferences.isLogged;
 
   // This widget is the root of your application.
   @override
@@ -62,7 +67,9 @@ class MyApp extends StatelessWidget {
           elevation: 0,
         ),
       ),
-            initialRoute: 'login',
+      initialRoute: isLoggedIn
+      ? 'home'
+      : 'login',
       routes: {
         'login': ( _ ) => const LoginScreen(),
         'home' : ( _ ) => const Home(),
@@ -72,4 +79,5 @@ class MyApp extends StatelessWidget {
       },
     );
   }
+
 }

@@ -2,9 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService extends ChangeNotifier{
   final String _baseUrl = 'http://24.199.122.158:5000';
+
 
   Future<String?> createUser( String numeroSerie, String nombreCompleto, String calle, String numeroCasa, String celular, String contrasena ) async{
 
@@ -23,6 +25,27 @@ class AuthService extends ChangeNotifier{
     final resp = await http.post(url, headers: headers, body: json.encode(authData));
 
     if (resp.statusCode == 200) {
+      return null;
+    } else {
+      return resp.body;
+    }
+
+  }
+
+  Future<String?> loginUser( String celular, String contrasena ) async{
+
+    final Map<String, dynamic> authData ={
+      'celular': celular,
+      'contraseña': contrasena,
+    };
+
+    final url = Uri.parse('$_baseUrl/api/auth/login');
+    final headers = {"Content-Type": "application/json;charset=UTF-8"};
+
+    final resp = await http.post(url, headers: headers, body: json.encode(authData));
+
+    if (resp.statusCode == 200) {
+      //Shared preferences para mantener la sesion
       return null;
     } else {
       return resp.body;

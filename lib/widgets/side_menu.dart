@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:standby/shared_preferences/shared_preferences.dart';
 import 'package:standby/widgets/switch_habilitar.dart';
 
 class SideMenu extends StatelessWidget {
@@ -14,8 +16,8 @@ class SideMenu extends StatelessWidget {
 
           Container(
             padding: const EdgeInsets.only(left: 20),
-            child: Row(
-              children: const [
+            child: const Row(
+              children: [
                 Text("Hablitar/Deshabilitar"),
                 SwtichHabilitar()
               ],
@@ -67,6 +69,16 @@ class SideMenu extends StatelessWidget {
             leading: const Icon(Icons.map),
             title: const Text("Mapa"),
             onTap: (){ Navigator.pushNamed(context, 'mapa'); },
+          ),
+
+          ListTile(
+            leading: const Icon(Icons.logout),
+            title: const Text("Cerrar sesión"),
+            onTap: () async {
+              Preferences.isLogged = false;
+              // ignore: use_build_context_synchronously
+              Navigator.pushReplacementNamed(context, 'login'); 
+            },
           ),
 
 

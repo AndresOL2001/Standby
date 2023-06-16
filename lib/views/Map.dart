@@ -163,6 +163,7 @@ final TextEditingController latitudController = TextEditingController();
             child: SizedBox(
               width: double.infinity,
               height: double.infinity,
+              // ignore: unnecessary_null_comparison
               child: currentLocation == null
                   ? const Center(child: Text("Loading"))
                   : _googleMap(),
@@ -245,7 +246,7 @@ final TextEditingController latitudController = TextEditingController();
                       markers: {
                         Marker(
                           markerId: const MarkerId("currentLocation"),
-                          position: LatLng(currentLocation!.latitude!,
+                          position: LatLng(currentLocation.latitude!,
                               currentLocation.longitude!),
                               draggable: true,
                               onDragEnd: (value){

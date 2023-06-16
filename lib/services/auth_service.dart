@@ -52,4 +52,23 @@ class AuthService extends ChangeNotifier{
 
   }
 
+  Future<String?> getUserInfo( String celular ) async{
+
+    final headers = {"Content-Type": "application/json;charset=UTF-8"};
+
+    final url = Uri.parse('$_baseUrl/api/auth/$celular');
+
+    final resp = await http.get(url, headers: headers);
+
+    return resp.body;
+
+    // if (resp.statusCode == 200) {
+    //   //Shared preferences para mantener la sesion
+    //   return null;
+    // } else {
+    //   return resp.body;
+    // }
+
+  }
+
 }

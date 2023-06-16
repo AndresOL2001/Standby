@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:standby/shared_preferences/shared_preferences.dart';
 import 'package:standby/widgets/side_menu.dart';
 
 
@@ -7,6 +8,10 @@ class Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String nombreUsuario = Preferences.nombreUsuario;
+    String direccionUsuario = Preferences.direccionUsuario;
+
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Home"),
@@ -25,11 +30,11 @@ class Home extends StatelessWidget {
 
               Container(
                 margin: const EdgeInsets.only(bottom: 10),
-                child: const Column(
+                child: Column(
                   children: [
-                    _InfoUser(topico: "Usuario: ", info: "0123"),
-                    _InfoUser(topico: "No. Serie Activado: ", info: "Cerrada Real de Sevilla. Hermosillo, Sonora"),
-                    _InfoUser(topico: "Plan vigente", info: ""),
+                    _InfoUser(topico: "Usuario: ", info: nombreUsuario),
+                    _InfoUser(topico: "No. Serie Activado: ", info: direccionUsuario),
+                    const _InfoUser(topico: "Plan vigente", info: ""),
                   ],
                 ),
               ),

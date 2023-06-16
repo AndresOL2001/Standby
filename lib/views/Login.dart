@@ -1,4 +1,6 @@
 // ignore: file_names
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:standby/model/nuevo_usuario.dart';
@@ -149,7 +151,19 @@ class _LoginForm extends StatelessWidget {
               );
 
               if( errorMessage == null ){
+                //Para un login persistente
                 Preferences.isLogged = true;
+
+                //Obtener info del usuario y la guardamos con shared preferences
+                final String? data = await authService.getUserInfo( loginForm.celular );
+                Map<String, dynamic> infoUser = jsonDecode(data!);
+
+                //Se actualiza el nombre del usuario y la direccion
+                Preferences.nombreUsuario = utf8.decode(infoUser["nombreCompleto"].runes.toList());
+                
+                String direccionData = "${infoUser["calle"]} ${infoUser["numeroCasa"]}";
+                Preferences.direccionUsuario = utf8.decode(direccionData.runes.toList());
+
                 // ignore: use_build_context_synchronously
                 Navigator.pushReplacementNamed(context, 'home');
                 loginForm.isLoading = false;

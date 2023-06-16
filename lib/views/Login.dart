@@ -1,8 +1,10 @@
 // ignore: file_names
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:standby/model/nuevo_usuario.dart';
 
 import '../provider/login_form_provider.dart';
+import '../provider/usuario_form_provider.dart';
 import '../ui/input_decorations.dart';
 import '../widgets/auth_background.dart';
 import '../widgets/card_container.dart';
@@ -12,6 +14,8 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userForm = Provider.of<UserFormProvider>(context);
+
     return Scaffold(
       body: AuthBackground(
         child: SingleChildScrollView(
@@ -29,20 +33,26 @@ class LoginScreen extends StatelessWidget {
                     Text('Iniciar Sesión', style: Theme.of(context).textTheme.headlineMedium ),
 
                     const SizedBox( height: 30 ),
-                    
-                    ChangeNotifierProvider(
-                      create: ( _ ) => LoginFormProvider(),
-                      child: _LoginForm()
-                    )
-                    
 
+                    _LoginForm()
+                 
                   ],
                 )
               ),
 
               const SizedBox( height: 50 ),
               TextButton(
-                onPressed: (){ Navigator.pushNamed(context, 'registro_usuario'); }, 
+                onPressed: (){ 
+                  userForm.nuevoUsuario = NuevoUsuario(
+                    numeroSerie: '', 
+                    nombreCompleto: '', 
+                    calle: '', 
+                    numeroCasa: '',
+                    celular: '', 
+                    contrasena: ''
+                  );
+                  Navigator.pushNamed(context, 'registro_usuario'); 
+                }, 
                 child: const Text('Crear una nueva cuenta', style: TextStyle( fontSize: 18, fontWeight: FontWeight.bold )),
               ),
               //const Text('Crear una nueva cuenta', style: TextStyle( fontSize: 18, fontWeight: FontWeight.bold )),

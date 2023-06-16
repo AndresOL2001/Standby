@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:standby/provider/login_form_provider.dart';
+import 'package:standby/provider/usuario_form_provider.dart';
 import 'package:standby/services/NotificationsServices.dart';
+import 'package:standby/services/auth_service.dart';
 
 import 'package:standby/widgets/screens.dart';
 
@@ -26,7 +30,20 @@ void main() async{
   sharedPreferences = await SharedPreferences.getInstance();
 
   //Correr la app
-  runApp(const MyApp());
+
+  runApp(
+      MultiProvider(
+        providers: [
+        ChangeNotifierProvider( create: (context) => UserFormProvider() ),
+        ChangeNotifierProvider( create: (context) => AuthService() ),
+        ChangeNotifierProvider( create: (context) => LoginFormProvider() ),
+        // Agrega otros proveedores aquí
+      ],
+        builder: (context, child) {
+          return const MyApp();
+      }
+      )
+  );
 }
 
 class MyApp extends StatelessWidget {

@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:standby/model/nuevo_usuario.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:standby/shared_preferences/shared_preferences.dart';
 
 import '../provider/providers.dart';

@@ -5,12 +5,9 @@ import 'package:standby/widgets/side_menu.dart';
 
 class Home extends StatelessWidget {
   const Home({super.key});
-
+  
   @override
   Widget build(BuildContext context) {
-    String nombreUsuario = Preferences.nombreUsuario;
-    String direccionUsuario = Preferences.direccionUsuario;
-
 
     return Scaffold(
       appBar: AppBar(
@@ -32,8 +29,8 @@ class Home extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 10),
                 child: Column(
                   children: [
-                    _InfoUser(topico: "Usuario: ", info: nombreUsuario),
-                    _InfoUser(topico: "No. Serie Activado: ", info: direccionUsuario),
+                    _InfoUser(topico: "Usuario: ", info: Preferences.nombreUsuario),
+                    _InfoUser(topico: "No. Serie Activado: ", info: Preferences.direccionUsuario),
                     const _InfoUser(topico: "Plan vigente", info: ""),
                   ],
                 ),
@@ -46,6 +43,7 @@ class Home extends StatelessWidget {
         ),
      ),
    );
+   
   }
 }
 

@@ -1,12 +1,26 @@
-import 'package:flutter/material.dart';
-import 'package:standby/shared_preferences/shared_preferences.dart';
-import 'package:standby/widgets/switch_habilitar.dart';
+import 'dart:convert';
 
-class SideMenu extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:standby/shared_preferences/shared_preferences.dart';
+
+import '../model/nuevo_usuario.dart';
+import '../provider/usuario_form_provider.dart';
+import '../services/auth_service.dart';
+
+class SideMenu extends StatefulWidget {
   const SideMenu({super.key});
 
   @override
+  State<SideMenu> createState() => _SideMenuState();
+}
+
+class _SideMenuState extends State<SideMenu> {
+  @override
   Widget build(BuildContext context) {
+    final userForm = Provider.of<UserFormProvider>(context);
+    final authService = Provider.of<AuthService>(context, listen: false);
+
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -15,10 +29,17 @@ class SideMenu extends StatelessWidget {
 
           Container(
             padding: const EdgeInsets.only(left: 20),
-            child: const Row(
+            child: Row(
               children: [
-                Text("Hablitar/Deshabilitar"),
-                SwtichHabilitar()
+                const Text("Hablitar/Deshabilitar"),
+                Switch.adaptive(
+                  value: Preferences.isAvailable, 
+                  onChanged: (value){
+                    Preferences.isAvailable = value;
+                    //print("---- Estado:  ${Preferences.isAvailable}");
+                    setState(() { });
+                  }
+                )
               ],
             ),
           ),
@@ -43,7 +64,27 @@ class SideMenu extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.edit_document),
             title: const Text("Editar información de registro"),
-            onTap: (){},
+            onTap: () async { 
+              final String? data = await authService.getUserInfo( Preferences.celularUsuario );
+              Map<String, dynamic> infoUser = jsonDecode(data!);
+
+              userForm.nuevoUsuario = NuevoUsuario(
+                idUsuario: infoUser["idUsuario"], 
+                numeroSerie: "", 
+                nombreCompleto: utf8.decode(infoUser["nombreCompleto"].runes.toList()), 
+                calle: infoUser["calle"], 
+                numeroCasa: infoUser["numeroCasa"], 
+                celular: infoUser["celular"], 
+                contrasena: "", 
+              );
+
+              // ignore: use_build_context_synchronously
+              Navigator.pushReplacementNamed(context, 'registro_usuario', arguments: { 
+                'tipo': 'editar', 
+                'numeroSerie': infoUser["residencial"]["numeroSerie"], 
+                'idUsuario': infoUser["idUsuario"] 
+                }); 
+            },
           ),
 
           ListTile(

@@ -71,4 +71,28 @@ class AuthService extends ChangeNotifier{
 
   }
 
+  Future<String?> editUser( String numeroSerie, String idUsuario, String nombreCompleto, String calle, String numeroCasa, String celular, String contrasena ) async{
+
+    final Map<String, dynamic> authData ={
+      'numeroSerie': numeroSerie,
+      'nombreCompleto': nombreCompleto,
+      'calle': calle,
+      'numeroCasa': numeroCasa,
+      'celular': celular,
+      'contraseña': contrasena,
+    };
+
+    final url = Uri.parse('$_baseUrl/api/auth/usuario/$idUsuario');
+    final headers = {"Content-Type": "application/json;charset=UTF-8"};
+
+    final resp = await http.put(url, headers: headers, body: json.encode(authData));
+
+    if (resp.statusCode == 200) {
+      return null;
+    } else {
+      return resp.body;
+    }
+
+  }
+
 }

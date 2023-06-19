@@ -10,6 +10,7 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:standby/shared_preferences/shared_preferences.dart';
 
 import 'package:standby/services/NotificationsServices.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -28,7 +29,7 @@ class MapState extends State<Map> with WidgetsBindingObserver{
   LatLng destination = LatLng(29.106903, -111.030132);
   LatLng caseta = LatLng(29.106940, -111.029684);
   List<LatLng> polylineCoordinates = [];
-  LocationData currentLocation =LocationData.fromMap({
+  LocationData currentLocation = LocationData.fromMap({
         "latitude": 29.106962,
         "longitude": -111.029630
       });
@@ -38,6 +39,8 @@ class MapState extends State<Map> with WidgetsBindingObserver{
   static bool notificacionEnviada = false;
   IconData icono = Icons.stop;
 
+  //Ver si esta habilitado
+  static bool isAvailable = Preferences.isAvailable;
 
 //Obtenemos ubicacion en tiempo real
   void getCurrentLocation()  {
@@ -64,19 +67,15 @@ class MapState extends State<Map> with WidgetsBindingObserver{
             cos(lat1 * p) * cos(lat2 * p) * 
             (1 - cos((lon2 - lon1) * p))/2;
       _distance =  12742 * asin(sqrt(a));
-      print(_distance);
 
 
       var sharedPreferences = await SharedPreferences.getInstance();
 
       if(valor == "caseta"){
-        print("Entro en caseta");
         sharedPreferences.setDouble('distanciaCaseta', _distance);
 
-      }else{
-        print("Entro en resindencial");
+      } else {
         sharedPreferences.setDouble('distanciaResidencial', _distance);
-
       }
       setState(() {});
     }
@@ -110,7 +109,9 @@ class MapState extends State<Map> with WidgetsBindingObserver{
   initState() {
     //getCurrentLocation();
     getPolyPoints();
-    initializeService();
+
+    if( isAvailable ) initializeService();
+    
     WidgetsBinding.instance.addObserver(this); //Para el ciclo de vida de la app
     super.initState();
   }
@@ -138,8 +139,9 @@ final TextEditingController latitudController = TextEditingController();
       floatingActionButton: FloatingActionButton(
         elevation: 0,
         backgroundColor:Colors.green,
-        child: Icon(icono),
-        onPressed: () async {
+        onPressed: isAvailable == false
+        ? null 
+        : () async {
 
           final service = FlutterBackgroundService();
           bool isRunning = await service.isRunning();
@@ -152,7 +154,8 @@ final TextEditingController latitudController = TextEditingController();
           }
           setState(() { });
 
-        }
+        },
+        child: Icon(icono)
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
 
@@ -307,79 +310,78 @@ final TextEditingController latitudController = TextEditingController();
   @pragma('vm-entry-point')
    static void onStart(ServiceInstance service) async{
     DartPluginRegistrant.ensureInitialized();
-    if( service is AndroidServiceInstance ){
-
-      service.on('setAsForeground').listen((event) { 
-        service.setAsForegroundService();
-      });
-      service.on('setAsBackground').listen((event) { 
-        service.setAsBackgroundService();
-      });
-      
-    }//fin if
-
-    service.on('stopService').listen((event) { 
-      service.stopSelf();
-    });
-
-    Timer.periodic(const Duration(seconds: 3), (timer) async{
-      var sharedPreferences = await SharedPreferences.getInstance();
-      await sharedPreferences.reload();
-      double? distanciaCaseta = sharedPreferences.getDouble("distanciaCaseta");
-      double? distanciaResidencial = sharedPreferences.getDouble("distanciaResidencial");
-      String distanciaRecortada = distanciaCaseta!.toStringAsFixed(3);
-
-      
-      if( distanciaCaseta < 1.0 ){
-        distanciaRecortada = "${double.parse(distanciaRecortada) * 1000} mts";
-      } else {
-        distanciaRecortada = "$distanciaRecortada km";
-      }
-
+        
       if( service is AndroidServiceInstance ){
-        if( await service.isForegroundService() ){
-          service.setForegroundNotificationInfo(
-            title: "Standby en segundo plano", 
-            content: "Estas a $distanciaRecortada"
-          );
+
+        service.on('setAsForeground').listen((event) { 
+          service.setAsForegroundService();
+        });
+        service.on('setAsBackground').listen((event) { 
+          service.setAsBackgroundService();
+        });
+        
+      }//fin if
+
+      service.on('stopService').listen((event) { 
+        service.stopSelf();
+      });
+
+      Timer.periodic(const Duration(seconds: 3), (timer) async{
+        var sharedPreferences = await SharedPreferences.getInstance();
+        await sharedPreferences.reload();
+        double? distanciaCaseta = sharedPreferences.getDouble("distanciaCaseta");
+        double? distanciaResidencial = sharedPreferences.getDouble("distanciaResidencial");
+        String distanciaRecortada = distanciaCaseta!.toStringAsFixed(3);
+
+        
+        if( distanciaCaseta < 1.0 ){
+          distanciaRecortada = "${double.parse(distanciaRecortada) * 1000} mts";
+        } else {
+          distanciaRecortada = "$distanciaRecortada km";
         }
-      }
-      //Operaciones que no son visibles pal usuario
-    
-      //----------- Parte para las notificaciones segun la distancia ---------------------
 
-    if(distanciaResidencial! <= 0.049){
-      entroEnCasa = true;
-    }else{
-      entroEnCasa = false;
-      notificacionEnviada = false;
-    }
-
-     if(distanciaCaseta <= 0.005){
-      entroEnCaseta = true;
-    }else{
-      entroEnCaseta = false;
-      }
-
-      if(entroEnCasa && entroEnCaseta && notificacionEnviada == false){
-        notificacionEnviada = true;
-        print("NOTIFICACION ENVIADA!!");
-        mostrarNotificacion("ENTRANDO A LA RESIDENCIAL");
-      }else{
-        print("NOTIFICACION NO ENVIADA!!");
-
-      }
-    
-    print("Esta en casa:$entroEnCasa");
-    print("Esta en caseta:$entroEnCaseta");
-
-
-  
-//-----------------------------------------------------------------------------------
+        if( service is AndroidServiceInstance ){
+          if( await service.isForegroundService() ){
+            service.setForegroundNotificationInfo(
+              title: "Standby en segundo plano", 
+              content: "Estas a $distanciaRecortada"
+            );
+          }
+        }
+        //Operaciones que no son visibles pal usuario
       
-      service.invoke("update");
-    });
+        //----------- Parte para las notificaciones segun la distancia ---------------------
 
+      if(distanciaResidencial! <= 0.049){
+        entroEnCasa = true;
+      }else{
+        entroEnCasa = false;
+        notificacionEnviada = false;
+      }
+
+      if(distanciaCaseta <= 0.005){
+        entroEnCaseta = true;
+      }else{
+        entroEnCaseta = false;
+        }
+
+        if(entroEnCasa && entroEnCaseta && notificacionEnviada == false){
+          notificacionEnviada = true;
+          //print("NOTIFICACION ENVIADA!!");
+          mostrarNotificacion("ENTRANDO A LA RESIDENCIAL");
+        }else{
+          //print("NOTIFICACION NO ENVIADA!!");
+
+        }
+      
+      // print("Esta en casa:$entroEnCasa");
+      // print("Esta en caseta:$entroEnCaseta");
+
+
+    
+  //-----------------------------------------------------------------------------------
+        
+        service.invoke("update");
+      });
   }
-  
 }

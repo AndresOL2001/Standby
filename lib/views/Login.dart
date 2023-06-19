@@ -49,6 +49,7 @@ class LoginScreen extends StatelessWidget {
               TextButton(
                 onPressed: (){ 
                   userForm.nuevoUsuario = NuevoUsuario(
+                    idUsuario: '',
                     numeroSerie: '', 
                     nombreCompleto: '', 
                     calle: '', 
@@ -163,6 +164,8 @@ class _LoginForm extends StatelessWidget {
                 
                 String direccionData = "${infoUser["calle"]} ${infoUser["numeroCasa"]}";
                 Preferences.direccionUsuario = utf8.decode(direccionData.runes.toList());
+
+                Preferences.celularUsuario = loginForm.celular;
 
                 // ignore: use_build_context_synchronously
                 Navigator.pushReplacementNamed(context, 'home');

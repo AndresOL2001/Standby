@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../shared_preferences/shared_preferences.dart';
+
 class SwtichHabilitar extends StatefulWidget {
   const SwtichHabilitar({super.key});
 
@@ -8,13 +10,14 @@ class SwtichHabilitar extends StatefulWidget {
 }
 
 class _SwtichHabilitarState extends State<SwtichHabilitar> {
-  bool isActive = true;
+
   @override
   Widget build(BuildContext context) {
     return Switch.adaptive(
-      value: isActive, 
+      value: Preferences.isAvailable, 
       onChanged: (value){
-        setState(() { isActive = value; });
+        Preferences.isAvailable = value;
+        setState(() { });
       }
     );
   }

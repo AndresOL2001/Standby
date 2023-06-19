@@ -5,6 +5,7 @@ NuevoUsuario nuevoUsuarioFromJson(String str) => NuevoUsuario.fromJson(json.deco
 String nuevoUsuarioToJson(NuevoUsuario data) => json.encode(data.toJson());
 
 class NuevoUsuario {
+    String idUsuario;
     String numeroSerie;
     String nombreCompleto;
     String calle;
@@ -13,6 +14,7 @@ class NuevoUsuario {
     String contrasena;
 
     NuevoUsuario({
+        required this.idUsuario,
         required this.numeroSerie,
         required this.nombreCompleto,
         required this.calle,
@@ -22,6 +24,7 @@ class NuevoUsuario {
     });
 
     factory NuevoUsuario.fromJson(Map<String, dynamic> json) => NuevoUsuario(
+        idUsuario: json["idUsuario"],
         numeroSerie: json["numeroSerie"],
         nombreCompleto: json["nombreCompleto"],
         calle: json["calle"],
@@ -31,6 +34,7 @@ class NuevoUsuario {
     );
 
     Map<String, dynamic> toJson() => {
+        "idUsuario": idUsuario,
         "numeroSerie": numeroSerie,
         "nombreCompleto": nombreCompleto,
         "calle": calle,

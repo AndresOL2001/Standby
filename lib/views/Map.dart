@@ -26,12 +26,12 @@ class Map extends StatefulWidget {
 class MapState extends State<Map> with WidgetsBindingObserver{
   final Completer<GoogleMapController> _controller = Completer();
   double _distance = 0;
-  LatLng destination = LatLng(29.106903, -111.030132);
-  LatLng caseta = LatLng(29.106940, -111.029684);
+  LatLng destination = LatLng(29.094597, -110.954259);
+  LatLng caseta = LatLng(29.094818, -110.954349);
   List<LatLng> polylineCoordinates = [];
   LocationData currentLocation = LocationData.fromMap({
-        "latitude": 29.106962,
-        "longitude": -111.029630
+        "latitude": 29.094597,
+        "longitude": -110.954259
       });
 
   static bool entroEnCasa = false;
@@ -43,8 +43,8 @@ class MapState extends State<Map> with WidgetsBindingObserver{
   static bool isAvailable = Preferences.isAvailable;
 
 //Obtenemos ubicacion en tiempo real
-  void getCurrentLocation()  {
-   /*  Location location = Location();
+  void getCurrentLocation() async{
+    Location location = Location();
     location.getLocation().then(
       (location) {
         currentLocation = location;
@@ -54,9 +54,10 @@ class MapState extends State<Map> with WidgetsBindingObserver{
     GoogleMapController googleMapController = await _controller.future;
     location.onLocationChanged.listen((newLoc) {
       currentLocation = newLoc;
-      calculateDistance(currentLocation!.latitude!, currentLocation!.longitude!, caseta.latitude, caseta.longitude);
+      calculateDistance(currentLocation!.latitude!, currentLocation!.longitude!, caseta.latitude, caseta.longitude, "caseta");
+      calculateDistance(currentLocation!.latitude!, currentLocation!.longitude!, caseta.latitude, caseta.longitude, "residencial");
       setState(() {});
-    }); */
+    });
   }
 
   //Calculamos distancia entre los 2 puntos
@@ -97,8 +98,8 @@ class MapState extends State<Map> with WidgetsBindingObserver{
         (PointLatLng point) =>
             polylineCoordinates.add(LatLng(point.latitude, point.longitude)),
       );
-      await calculateDistance(currentLocation.latitude!, currentLocation.longitude!, caseta.latitude, caseta.longitude,"caseta");
-      await calculateDistance(currentLocation.latitude!, currentLocation.longitude!, destination.latitude, destination.longitude,"residencial");
+      await calculateDistance(currentLocation.latitude!, currentLocation.longitude!, caseta.latitude, caseta.longitude, "caseta");
+      await calculateDistance(currentLocation.latitude!, currentLocation.longitude!, destination.latitude, destination.longitude, "residencial");
       setState(() {});
     }
 
@@ -107,7 +108,7 @@ class MapState extends State<Map> with WidgetsBindingObserver{
 //Constructor
   @override
   initState() {
-    //getCurrentLocation();
+    getCurrentLocation();
     getPolyPoints();
 
     if( isAvailable ) initializeService();
@@ -264,7 +265,7 @@ final TextEditingController latitudController = TextEditingController();
                         Marker(
                           markerId: MarkerId("destination"),
                           position: destination,
-                          draggable: false,
+                          draggable: true,
                           onDragEnd: (value){
                             destination = value;
                             getPolyPoints();
@@ -273,7 +274,11 @@ final TextEditingController latitudController = TextEditingController();
                          Marker(
                           markerId: MarkerId("userLocation"),
                           position: caseta,
-                          draggable: false
+                          draggable: true,
+                           onDragEnd: (value){
+                            caseta = value;
+                            getPolyPoints();
+                          },
                         ),
                       },
                       onMapCreated: (mapController) {

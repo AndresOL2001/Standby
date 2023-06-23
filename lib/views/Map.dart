@@ -43,7 +43,7 @@ class MapState extends State<Map> with WidgetsBindingObserver{
   static bool isAvailable = Preferences.isAvailable;
 
 //Obtenemos ubicacion en tiempo real
-  void getCurrentLocation() async{
+  void getCurrentLocation() async {
     Location location = Location();
     location.getLocation().then(
       (location) {

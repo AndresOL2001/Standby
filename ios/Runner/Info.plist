@@ -3,6 +3,13 @@
 <plist version="1.0">
 <dict>
 
+	<key>NSMotionUsageDescription</key>
+	<string>This application tracks your steps</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>processing</string>
+	</array>
+
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>dev.flutter.background.refresh</string>

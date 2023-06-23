@@ -71,7 +71,7 @@ class MyApp extends StatelessWidget {
       : 'login',
       routes: {
         'login': ( _ ) => const LoginScreen(),
-        'home' : ( _ ) => const Home(),
+        'home' : ( _ ) => Home(),
         'mapa' : ( _ ) => const Map(),
         'registro_usuario' : ( _ ) => const RegistroUsuario(),
         'accesos' : ( _ ) => Accesos(),

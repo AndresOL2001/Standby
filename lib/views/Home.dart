@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pedometer/pedometer.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:standby/shared_preferences/shared_preferences.dart';
 import 'package:standby/widgets/side_menu.dart';
 
@@ -53,7 +54,8 @@ class _HomeState extends State<Home> {
     });
   }
 
-  void initPlatformState() {
+  void initPlatformState() async {
+    if (await Permission.activityRecognition.request().isGranted) {
     _pedestrianStatusStream = Pedometer.pedestrianStatusStream;
     _pedestrianStatusStream
         .listen(onPedestrianStatusChanged)
@@ -61,7 +63,8 @@ class _HomeState extends State<Home> {
 
     _stepCountStream = Pedometer.stepCountStream;
     _stepCountStream.listen(onStepCount).onError(onStepCountError);
-
+    }
+    
     if (!mounted) return;
   }
 
@@ -98,6 +101,20 @@ class _HomeState extends State<Home> {
               const _BotonAbrir(),
 
               const SizedBox( height: 10 ),
+
+              Text(
+                'Steps Taken',
+                style: TextStyle(fontSize: 30),
+              ),
+              Text(
+                _steps,
+                style: TextStyle(fontSize: 60),
+              ),
+              Divider(
+                height: 100,
+                thickness: 0,
+                color: Colors.white,
+              ),
 
               Icon(
                 _status == 'walking'

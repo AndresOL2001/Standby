@@ -47,8 +47,9 @@ dependencies:
   permission_handler: ^10.2.0
   provider: ^6.0.5
   http: ^0.13.4
+  flutter_activity_recognition: ^2.0.0
   #flutter_motion: ^0.0.3
-  pedometer: ^3.0.0
+  #pedometer: ^3.0.0
 
 dev_dependencies:
   flutter_test:

@@ -1,8 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:pedometer/pedometer.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:standby/shared_preferences/shared_preferences.dart';
 import 'package:standby/widgets/side_menu.dart';
+
+import 'package:flutter_activity_recognition/flutter_activity_recognition.dart';
 
 
 class Home extends StatefulWidget {
@@ -13,59 +15,39 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  final _activityStreamController = StreamController<Activity>();
+  StreamSubscription<Activity>? _activityStreamSubscription;
 
-  late Stream<StepCount> _stepCountStream;
-  late Stream<PedestrianStatus> _pedestrianStatusStream;
-  String _status = '?', _steps = '?';
+  void _onActivityReceive(Activity activity) {
+    _activityStreamController.sink.add(activity);
+  }
 
+  void _handleError(dynamic error) {
+  }
 
   @override
   void initState() {
     super.initState();
-    initPlatformState();
-  }
+    WidgetsBinding.instance?.addPostFrameCallback((_) async {
+      final activityRecognition = FlutterActivityRecognition.instance;
 
-  void onStepCount(StepCount event) {
-    print(event);
-    setState(() {
-      _steps = event.steps.toString();
+      // Check if the user has granted permission. If not, request permission.
+      PermissionRequestResult reqResult;
+      reqResult = await activityRecognition.checkPermission();
+      if (reqResult == PermissionRequestResult.PERMANENTLY_DENIED) {
+        return;
+      } else if (reqResult == PermissionRequestResult.DENIED) {
+        reqResult = await activityRecognition.requestPermission();
+        if (reqResult != PermissionRequestResult.GRANTED) {
+          return;
+        }
+      }
+
+      // Subscribe to the activity stream.
+      _activityStreamSubscription = activityRecognition.activityStream
+          .handleError(_handleError)
+          .listen(_onActivityReceive);
     });
-  }
-
-  void onPedestrianStatusChanged(PedestrianStatus event) {
-    print("ESTE ES EL EVENTO $event");
-    setState(() {
-      _status = event.status;
-    });
-  }
-
-  void onPedestrianStatusError(error) {
-    print("ESTE ES EL ERROR $error");
-    setState(() {
-      _status = 'Pedestrian Status not available';
-    });
-    print("ESTE ES EL ESTADO $_status");
-  }
-
-  void onStepCountError(error) {
-    print('onStepCountError: $error');
-    setState(() {
-      _steps = 'Step Count not available';
-    });
-  }
-
-  void initPlatformState() async {
-    if (await Permission.activityRecognition.request().isGranted) {
-    _pedestrianStatusStream = Pedometer.pedestrianStatusStream;
-    _pedestrianStatusStream
-        .listen(onPedestrianStatusChanged)
-        .onError(onPedestrianStatusError);
-
-    _stepCountStream = Pedometer.stepCountStream;
-    _stepCountStream.listen(onStepCount).onError(onStepCountError);
-    }
-    
-    if (!mounted) return;
   }
 
   @override
@@ -100,37 +82,36 @@ class _HomeState extends State<Home> {
 
               const _BotonAbrir(),
 
-              const SizedBox( height: 10 ),
+              StreamBuilder<Activity>(
+                stream: _activityStreamController.stream,
+                builder: (context, snapshot) {
+                  final updatedDateTime = DateTime.now();
+                  final content = snapshot.data?.type ?? ActivityType.STILL;
 
-              Text(
-                'Steps Taken',
-                style: TextStyle(fontSize: 30),
-              ),
-              Text(
-                _steps,
-                style: TextStyle(fontSize: 60),
-              ),
-              Divider(
-                height: 100,
-                thickness: 0,
-                color: Colors.white,
-              ),
+                  return SizedBox(
+                    height: 200,
+                    child: ListView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.all(8.0),
+                      children: [
+                        Text('•\t\tActivity (updated: $updatedDateTime)'),
 
-              Icon(
-                _status == 'walking'
-                    ? Icons.directions_walk
-                    : _status == 'stopped'
-                        ? Icons.accessibility_new
-                        : Icons.error,
-                size: 100,
-              ),
-              Center(
-                child: Text(
-                  _status,
-                  style: _status == 'walking' || _status == 'stopped'
-                      ? TextStyle(fontSize: 30)
-                      : TextStyle(fontSize: 20, color: Colors.red),
-                ),
+                        const SizedBox(height: 10.0),
+                  
+                        Icon(
+                            (content == ActivityType.WALKING || content == ActivityType.UNKNOWN)
+                            ? Icons.nordic_walking
+                            : (content == ActivityType.STILL || content == ActivityType.IN_VEHICLE)
+                              ? Icons.car_rental
+                              : Icons.warning
+                            ,
+                          size: 100,
+                        )
+                  
+                      ]
+                    ),
+                  );
+                }
               )
 
             ],

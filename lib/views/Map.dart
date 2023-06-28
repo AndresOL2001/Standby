@@ -289,7 +289,7 @@ final TextEditingController latitudController = TextEditingController();
 
 
   
-  Future <void> initializeService() async{
+  Future <void> initializeService() async {
     final service = FlutterBackgroundService();
     await service.configure(
       iosConfiguration: IosConfiguration(

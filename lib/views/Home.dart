@@ -23,6 +23,7 @@ class _HomeState extends State<Home> {
   }
 
   void _handleError(dynamic error) {
+    print(error);
   }
 
   @override
@@ -35,10 +36,14 @@ class _HomeState extends State<Home> {
       PermissionRequestResult reqResult;
       reqResult = await activityRecognition.checkPermission();
       if (reqResult == PermissionRequestResult.PERMANENTLY_DENIED) {
+        print("Permisos denegados");
         return;
       } else if (reqResult == PermissionRequestResult.DENIED) {
+                print("Permisos denegados");
         reqResult = await activityRecognition.requestPermission();
         if (reqResult != PermissionRequestResult.GRANTED) {
+                  print("todo correcto");
+
           return;
         }
       }
@@ -97,6 +102,8 @@ class _HomeState extends State<Home> {
                         Text('•\t\tActivity (updated: $updatedDateTime)'),
 
                         const SizedBox(height: 10.0),
+
+                        Text( content.toString(), style: TextStyle(fontSize: 20), ),
                   
                         Icon(
                             (content == ActivityType.WALKING || content == ActivityType.UNKNOWN)

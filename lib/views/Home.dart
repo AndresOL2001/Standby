@@ -17,9 +17,10 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final _activityStreamController = StreamController<Activity>();
   StreamSubscription<Activity>? _activityStreamSubscription;
+  late ActivityType? actividadAnterior = null;
 
   void _onActivityReceive(Activity activity) {
-    _activityStreamController.sink.add(activity);
+      _activityStreamController.sink.add(activity);
   }
 
   void _handleError(dynamic error) {
@@ -36,13 +37,10 @@ class _HomeState extends State<Home> {
       PermissionRequestResult reqResult;
       reqResult = await activityRecognition.checkPermission();
       if (reqResult == PermissionRequestResult.PERMANENTLY_DENIED) {
-        print("Permisos denegados");
         return;
       } else if (reqResult == PermissionRequestResult.DENIED) {
-                print("Permisos denegados");
         reqResult = await activityRecognition.requestPermission();
         if (reqResult != PermissionRequestResult.GRANTED) {
-                  print("todo correcto");
 
           return;
         }
@@ -91,33 +89,56 @@ class _HomeState extends State<Home> {
                 stream: _activityStreamController.stream,
                 builder: (context, snapshot) {
                   final updatedDateTime = DateTime.now();
-                  final content = snapshot.data?.type ?? ActivityType.STILL;
 
-                  return SizedBox(
-                    height: 200,
-                    child: ListView(
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.all(8.0),
-                      children: [
-                        Text('•\t\tActivity (updated: $updatedDateTime)'),
+                  ActivityType? content = snapshot.data?.type ?? ActivityType.STILL;
 
-                        const SizedBox(height: 10.0),
+                  if (snapshot.hasData && snapshot.data!.type != ActivityType.UNKNOWN) {
+                    actividadAnterior = snapshot.data!.type; // Guarda el estado anterior
+                  }
+                
+                  // Verifica si el valor actual es ActivityType.UNKNOWN
+                  if (snapshot.hasData && snapshot.data!.type == ActivityType.UNKNOWN) {
+                    if (actividadAnterior != null) {
+                      // Asigna el valor de estadoAnterior si existe
+                      content = actividadAnterior;
+                    }
+                  }
 
-                        Text( content.toString(), style: TextStyle(fontSize: 20), ),
-                  
-                        Icon(
-                            (content == ActivityType.WALKING || content == ActivityType.UNKNOWN)
-                            ? Icons.nordic_walking
-                            : (content == ActivityType.STILL || content == ActivityType.IN_VEHICLE)
-                              ? Icons.car_rental
-                              : Icons.warning
-                            ,
-                          size: 100,
-                        )
-                  
-                      ]
-                    ),
-                  );
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    // Muestra un indicador de carga mientras espera los datos
+                    return const CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                      // Muestra un mensaje de error si ocurre algún error
+                      return Text('Error: ${snapshot.error}');
+                  } else {
+
+                    return SizedBox(
+                      height: 200,
+                      child: ListView(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.all(8.0),
+                        children: [
+                          Text('•\t\tActivity (updated: $updatedDateTime)'),
+
+                          const SizedBox(height: 10.0),
+
+                          Text( content.toString(), style: const TextStyle(fontSize: 20), ),
+                    
+                          Icon(
+                              (content == ActivityType.WALKING || content == ActivityType.UNKNOWN)
+                              ? Icons.nordic_walking
+                              : (content == ActivityType.STILL || content == ActivityType.IN_VEHICLE)
+                                ? Icons.car_rental
+                                : Icons.warning
+                              ,
+                            size: 100,
+                          )
+                    
+                        ]
+                      ),
+                    );
+                  } //fin if else
+
                 }
               )
 

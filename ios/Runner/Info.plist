@@ -15,6 +15,9 @@
 		<string>dev.flutter.background.refresh</string>
 	</array>
 
+	<key>NSMotionUsageDescription</key>
+	<string>Detects human activity</string>
+
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

@@ -8,11 +8,19 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
+
    <application
         android:label="standby"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
-            <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyCNmpD_f-vJFakrjcL0X5ugzf9tKjZOM6I"/>  
+        <receiver android:name="dk.cachet.activity_recognition_flutter.ActivityRecognizedBroadcastReceiver"/>
+        <service
+        android:name="dk.cachet.activity_recognition_flutter.ActivityRecognizedService"
+        android:permission="android.permission.BIND_JOB_SERVICE"
+        android:exported="true"/>
+        <service android:name="dk.cachet.activity_recognition_flutter.ForegroundService" />
+        
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyCNmpD_f-vJFakrjcL0X5ugzf9tKjZOM6I"/>  
         <activity
             android:name=".MainActivity"
             android:exported="true"

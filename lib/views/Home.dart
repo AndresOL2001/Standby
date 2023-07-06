@@ -1,10 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:activity_recognition_flutter/activity_recognition_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:standby/shared_preferences/shared_preferences.dart';
 import 'package:standby/widgets/side_menu.dart';
-
-import 'package:flutter_activity_recognition/flutter_activity_recognition.dart';
 
 
 class Home extends StatefulWidget {
@@ -15,44 +16,73 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  final _activityStreamController = StreamController<Activity>();
-  StreamSubscription<Activity>? _activityStreamSubscription;
 
-  void _onActivityReceive(Activity activity) {
-    _activityStreamController.sink.add(activity);
-  }
-
-  void _handleError(dynamic error) {
-    print(error);
-  }
+  StreamSubscription<ActivityEvent>? activityStreamSubscription;
+  List<ActivityEvent> _events = [];
+  ActivityRecognition activityRecognition = ActivityRecognition();
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance?.addPostFrameCallback((_) async {
-      final activityRecognition = FlutterActivityRecognition.instance;
+    _init();
+    _events.add(ActivityEvent.unknown());
+  }
 
-      // Check if the user has granted permission. If not, request permission.
-      PermissionRequestResult reqResult;
-      reqResult = await activityRecognition.checkPermission();
-      if (reqResult == PermissionRequestResult.PERMANENTLY_DENIED) {
-        print("Permisos denegados");
-        return;
-      } else if (reqResult == PermissionRequestResult.DENIED) {
-                print("Permisos denegados");
-        reqResult = await activityRecognition.requestPermission();
-        if (reqResult != PermissionRequestResult.GRANTED) {
-                  print("todo correcto");
+  @override
+  void dispose() {
+    activityStreamSubscription?.cancel();
+    super.dispose();
+  }
 
-          return;
-        }
+  void _init() async {
+    // Android requires explicitly asking permission
+    if (Platform.isAndroid) {
+      if (await Permission.activityRecognition.request().isGranted) {
+        _startTracking();
       }
+    }
 
-      // Subscribe to the activity stream.
-      _activityStreamSubscription = activityRecognition.activityStream
-          .handleError(_handleError)
-          .listen(_onActivityReceive);
+    // iOS does not
+    else {
+      _startTracking();
+    }
+  }
+
+  void _startTracking() {
+    activityStreamSubscription = activityRecognition
+        .activityStream(runForegroundService: true)
+        .listen(onData, onError: onError);
+  }
+
+  void onData(ActivityEvent activityEvent) {
+    setState(() {
+      _events.add(activityEvent);
     });
+  }
+
+  void onError(Object error) {
+    print('ERROR - $error');
+  }
+
+      Icon _activityIcon(ActivityType type) {
+    switch (type) {
+      case ActivityType.WALKING:
+        return const Icon(Icons.directions_walk);
+      case ActivityType.IN_VEHICLE:
+        return const Icon(Icons.car_rental);
+      case ActivityType.ON_BICYCLE:
+        return const Icon(Icons.pedal_bike);
+      case ActivityType.ON_FOOT:
+        return const Icon(Icons.directions_walk);
+      case ActivityType.RUNNING:
+        return const Icon(Icons.run_circle);
+      case ActivityType.STILL:
+        return const Icon(Icons.cancel_outlined);
+      case ActivityType.TILTING:
+        return const Icon(Icons.redo);
+      default:
+        return const Icon(Icons.device_unknown);
+    }
   }
 
   @override
@@ -71,67 +101,40 @@ class _HomeState extends State<Home> {
       body: Center(
         child: Container(
           padding: const EdgeInsets.all(10),
-          child: Column(
-            children: [
+          child: ListView.builder(
+                itemCount: _events.length,
+                itemBuilder: (_, int idx) {
+                  final activity = _events[idx];
+                  return Column(
+                    children: [
 
-              Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                child: Column(
-                  children: [
-                    _InfoUser(topico: "Usuario: ", info: Preferences.nombreUsuario),
-                    _InfoUser(topico: "No. Serie Activado: ", info: Preferences.direccionUsuario),
-                    const _InfoUser(topico: "Plan vigente", info: ""),
-                  ],
-                ),
-              ),
-
-              const _BotonAbrir(),
-
-              StreamBuilder<Activity>(
-                stream: _activityStreamController.stream,
-                builder: (context, snapshot) {
-                  final updatedDateTime = DateTime.now();
-                  final content = snapshot.data?.type ?? ActivityType.STILL;
-
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    // Muestra un indicador de carga mientras espera los datos
-                    return const CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
-                      // Muestra un mensaje de error si ocurre algún error
-                      return Text('Error: ${snapshot.error}');
-                  } else {
-
-                    return SizedBox(
-                      height: 200,
-                      child: ListView(
-                        physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.all(8.0),
-                        children: [
-                          Text('•\t\tActivity (updated: $updatedDateTime)'),
-
-                          const SizedBox(height: 10.0),
-
-                          Text( content.toString(), style: TextStyle(fontSize: 20), ),
-                    
-                          Icon(
-                              (content == ActivityType.WALKING || content == ActivityType.UNKNOWN)
-                              ? Icons.nordic_walking
-                              : (content == ActivityType.STILL || content == ActivityType.IN_VEHICLE)
-                                ? Icons.car_rental
-                                : Icons.warning
-                              ,
-                            size: 100,
-                          )
-                    
-                        ]
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        child: Column(
+                          children: [
+                            _InfoUser(topico: "Usuario: ", info: Preferences.nombreUsuario),
+                            _InfoUser(topico: "No. Serie Activado: ", info: Preferences.direccionUsuario),
+                            const _InfoUser(topico: "Plan vigente", info: ""),
+                          ],
+                        ),
                       ),
-                    );
-                  }
-                }//fin if else
-              )
 
-            ],
-          ),
+                      ListTile(
+                        leading: _activityIcon(activity.type),
+                        title: Text(
+                            '${activity.type.toString().split('.').last} (${activity.confidence}%)'),
+                        trailing: Text(activity.timeStamp
+                            .toString()
+                            .split(' ')
+                            .last
+                            .split('.')
+                            .first),
+                      ),
+                    ]
+                  );
+                },
+
+              ),
         ),
      ),
    );
@@ -183,4 +186,5 @@ class _InfoUser extends StatelessWidget {
       ],
     );
   }
+
 }

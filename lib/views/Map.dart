@@ -51,11 +51,11 @@ class MapState extends State<Map> with WidgetsBindingObserver{
       },
     );
 
-    GoogleMapController googleMapController = await _controller.future;
+    //GoogleMapController googleMapController = await _controller.future;
     location.onLocationChanged.listen((newLoc) {
       currentLocation = newLoc;
-      calculateDistance(currentLocation!.latitude!, currentLocation!.longitude!, caseta.latitude, caseta.longitude, "caseta");
-      calculateDistance(currentLocation!.latitude!, currentLocation!.longitude!, caseta.latitude, caseta.longitude, "residencial");
+      calculateDistance(currentLocation.latitude!, currentLocation.longitude!, caseta.latitude, caseta.longitude, "caseta");
+      calculateDistance(currentLocation.latitude!, currentLocation.longitude!, caseta.latitude, caseta.longitude, "residencial");
       setState(() {});
     });
   }

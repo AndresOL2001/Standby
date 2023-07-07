@@ -1,13 +1,20 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import 'package:standby/provider/providers.dart';
+import 'package:standby/provider/ui_provider.dart';
 
 import 'package:standby/services/services.dart';
 import 'package:standby/shared_preferences/shared_preferences.dart';
-
-import 'package:standby/widgets/screens.dart';
+import 'package:standby/views/Accesos.dart';
+import 'package:standby/views/Home.dart';
+import 'package:standby/views/Login.dart';
+import 'package:standby/views/Principal.dart';
+import 'package:standby/views/RegistroUsuario.dart';
 
 import 'views/Map.dart';
 
@@ -17,7 +24,10 @@ void main() async{
   //Para las notificaciones se hizo async el metodo main
   //Para ejecutar las inicializaciones de las notificaciones
   WidgetsFlutterBinding();
-  WidgetsFlutterBinding.ensureInitialized();
+  DartPluginRegistrant.ensureInitialized();
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent, // transparent status bar
+  ));
   await Permission.notification.isDenied.then(
     (value){
       if( value ){
@@ -38,6 +48,7 @@ void main() async{
         ChangeNotifierProvider( create: (context) => UserFormProvider() ),
         ChangeNotifierProvider( create: (context) => AuthService() ),
         ChangeNotifierProvider( create: (context) => LoginFormProvider() ),
+        ChangeNotifierProvider( create: (context) => UiProvider() ),
         // Agrega otros proveedores aquí
       ],
         builder: (context, child) {
@@ -58,20 +69,22 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Stand By 0.5.5',
+    
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.indigo,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.indigo,
-          elevation: 0,
-        ),
+        primaryColor: Colors.indigo,
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: Colors.indigo
+        )
       ),
       initialRoute: isLoggedIn
       ? 'home'
       : 'login',
       routes: {
         'login': ( _ ) => const LoginScreen(),
-        'home' : ( _ ) => Home(),
+        'home' : ( _ ) => const Home(),
+        'principal' : ( _ ) => const Principal(),
         'mapa' : ( _ ) => const Map(),
         'registro_usuario' : ( _ ) => const RegistroUsuario(),
         'accesos' : ( _ ) => Accesos(),

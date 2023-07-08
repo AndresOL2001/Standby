@@ -16,16 +16,12 @@ class Acceso {
     Acceso({
         required this.idAcceso,
         required this.direccion,
-        this.precio,
-        this.nombre,
+        required this.precio,
+        required this.nombre,
         required this.latitudCaseta,
         required this.longitudCaseta,
         this.isSelected = false
     });
-
-  set isSelectedd( bool value ){
-    isSelected = value;
-  }
 
     factory Acceso.fromJson(Map<String, dynamic> json) => Acceso(
         idAcceso: json["idAcceso"],

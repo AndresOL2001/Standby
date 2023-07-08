@@ -37,7 +37,7 @@ class _AccesosRadio extends State<AccesosRadio> {
               _listaAccesos(context, snapshot),
 
               Text(
-                "Precio total: $precioTotal",
+                "Precio total: \$ $precioTotal MXN",
                 style: const TextStyle( fontSize: 16 ),
               )
             ]

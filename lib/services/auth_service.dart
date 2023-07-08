@@ -1,7 +1,10 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
+import '../model/acceso.dart';
 
 class AuthService extends ChangeNotifier{
   final String _baseUrl = 'http://24.199.122.158:5000';
@@ -91,6 +94,27 @@ class AuthService extends ChangeNotifier{
       return null;
     } else {
       return resp.body;
+    }
+
+  }
+
+  List<Acceso> parseAcceso(String responseBody){
+    var list = json.decode(responseBody) as List<dynamic>;
+    List<Acceso> accesos = list.map((model) => Acceso.fromJson(model)).toList();
+    return accesos;
+  }
+
+  Future<List<Acceso>> getAccesos( String idResidencial ) async{
+
+    final url = Uri.parse('$_baseUrl/api/accesos/residencial/$idResidencial');
+    final headers = {"Content-Type": "application/json;charset=UTF-8"};
+
+    final resp = await http.get(url, headers: headers);
+
+    if( resp.statusCode == 200 ){
+      return parseAcceso(resp.body);
+    } else {
+      throw Exception('API Error');
     }
 
   }

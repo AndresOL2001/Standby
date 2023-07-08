@@ -7,30 +7,16 @@ import '../widgets/accesos_radio.dart';
 class Accesos extends StatelessWidget {
   Accesos({super.key});
 
-  static const accesos = [
-    Acceso(
-      nombre: "Acceso 1", 
-      ubicacion: "Camino del rey"
-    ),
-    Acceso(
-      nombre: "Acceso 2", 
-      ubicacion: "Camino del alamo"
-    ),
-    Acceso(
-      nombre: "Acceso 3", 
-      ubicacion: "Piedra bola"
-    ),
-  ];
-
-  Acceso selectedValue = accesos.first;
-
   @override
   Widget build(BuildContext context) {
+    final Map<String, dynamic>? datos = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+    String id = datos!['idResidencial'];
+     
     return Scaffold(
       appBar: AppBar(
         title: const Text("Accesos"),
       ),
-      body: const AccesosRadio(),
+      body: AccesosRadio(idResidencial: id),
     );
   }
 }

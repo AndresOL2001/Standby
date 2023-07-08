@@ -11,6 +11,7 @@ class Preferences{
   static String _nombreUsuario = "";
   static String _direccionUsuario = "";
   static String _celularUsuario = "";
+  static String _idResidencial = "";
 
   //Funcion habilitar y deshabilitar
   static bool _isAvailable = false;
@@ -55,6 +56,16 @@ class Preferences{
   static set celularUsuario( String value ){
     _celularUsuario = value;
     _prefs.setString('celularUsuario', value);
+  }
+
+   // ------------------- RESIDENCIAL -------------------
+    static String get idResidencial{
+      return _prefs.getString('idResidencial') ?? _idResidencial;
+    }
+
+  static set idResidencial( String value ){
+    _idResidencial = value;
+    _prefs.setString('idResidencial', value);
   }
 
   // ------------------- HABILITAR / DESHABILITAR ------------------------------

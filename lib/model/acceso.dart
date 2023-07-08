@@ -1,21 +1,47 @@
+import 'dart:convert';
+
+Acceso accesoFromJson(String str) => Acceso.fromJson(json.decode(str));
+
+String accesoToJson(Acceso data) => json.encode(data.toJson());
+
 class Acceso {
-  final String nombre;
-  final String ubicacion;
+    String idAcceso;
+    String direccion;
+    dynamic precio;
+    dynamic nombre;
+    String latitudCaseta;
+    String longitudCaseta;
+    bool isSelected;
 
-  const Acceso({ 
-    required this.nombre, 
-    required this.ubicacion 
-  });
+    Acceso({
+        required this.idAcceso,
+        required this.direccion,
+        this.precio,
+        this.nombre,
+        required this.latitudCaseta,
+        required this.longitudCaseta,
+        this.isSelected = false
+    });
 
-  @override
-  bool operator == (Object other) =>
-      identical(this, other) ||
-      other is Acceso &&
-              runtimeType == other.runtimeType &&
-              nombre == other.nombre &&
-              ubicacion == other.ubicacion;
+  set isSelectedd( bool value ){
+    isSelected = value;
+  }
 
-  @override
-  int get hashCode => nombre.hashCode ^ ubicacion.hashCode;
+    factory Acceso.fromJson(Map<String, dynamic> json) => Acceso(
+        idAcceso: json["idAcceso"],
+        direccion: json["direccion"],
+        precio: json["precio"],
+        nombre: json["nombre"],
+        latitudCaseta: json["latitudCaseta"],
+        longitudCaseta: json["longitudCaseta"],
+    );
 
+    Map<String, dynamic> toJson() => {
+        "idAcceso": idAcceso,
+        "direccion": direccion,
+        "precio": precio,
+        "nombre": nombre,
+        "latitudCaseta": latitudCaseta,
+        "longitudCaseta": longitudCaseta,
+    };
 }

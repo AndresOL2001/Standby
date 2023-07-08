@@ -165,6 +165,8 @@ class _LoginForm extends StatelessWidget {
                 String direccionData = "${infoUser["calle"]} ${infoUser["numeroCasa"]}";
                 Preferences.direccionUsuario = utf8.decode(direccionData.runes.toList());
 
+                Preferences.idResidencial = infoUser["residencial"]["idResidencial"];
+                
                 Preferences.celularUsuario = loginForm.celular;
 
                 // ignore: use_build_context_synchronously

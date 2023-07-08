@@ -10,6 +10,8 @@ import '../services/auth_service.dart';
 import '../shared_preferences/shared_preferences.dart';
 
 class CustomSliverList extends StatefulWidget {
+  const CustomSliverList({super.key});
+
   @override
   State<CustomSliverList> createState() => _CustomSliverListState();
 }
@@ -85,7 +87,9 @@ class _CustomSliverListState extends State<CustomSliverList> {
           ListTile(
             leading: const Icon(Icons.door_back_door),
             title: const Text("Accesos"),
-            onTap: (){ Navigator.pushNamed(context, 'accesos'); },
+            onTap: (){ 
+              Navigator.pushNamed(context, 'accesos', arguments: { 'idResidencial': Preferences.idResidencial }); 
+            },
           ),
 
           ListTile(

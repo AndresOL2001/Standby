@@ -7,9 +7,9 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  CustomScrollView(
+    return  const CustomScrollView(
       slivers: [
-        const _CustomSliverAppBar(),
+        _CustomSliverAppBar(),
 
         CustomSliverList()
       ],

@@ -69,7 +69,7 @@ class _CustomSliverListState extends State<CustomSliverList> {
                 idUsuario: infoUser["idUsuario"], 
                 numeroSerie: "", 
                 nombreCompleto: utf8.decode(infoUser["nombreCompleto"].runes.toList()), 
-                calle: infoUser["calle"], 
+                calle: utf8.decode(infoUser["calle"].runes.toList()), 
                 numeroCasa: infoUser["numeroCasa"], 
                 celular: infoUser["celular"], 
                 contrasena: "", 

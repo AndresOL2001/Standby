@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:standby/widgets/listtile_sliver.dart';
 
 import '../model/nuevo_usuario.dart';
 import '../provider/usuario_form_provider.dart';
@@ -57,11 +58,11 @@ class _CustomSliverListState extends State<CustomSliverList> {
               )
             ),
           ),
-          
-          ListTile(
-            leading: const Icon(Icons.edit_document),
-            title: const Text("Editar información de registro"),
-            onTap: () async { 
+
+          ListTileSliver(
+            icono: Icons.edit_document, 
+            titulo: "Editar información de registro", 
+            onTapFunction: () async { 
               final String? data = await authService.getUserInfo( Preferences.celularUsuario );
               Map<String, dynamic> infoUser = jsonDecode(data!);
 
@@ -81,46 +82,45 @@ class _CustomSliverListState extends State<CustomSliverList> {
                 'numeroSerie': infoUser["residencial"]["numeroSerie"], 
                 'idUsuario': infoUser["idUsuario"] 
                 }); 
-            },
+            }
           ),
 
-          ListTile(
-            leading: const Icon(Icons.door_back_door),
-            title: const Text("Accesos"),
-            onTap: (){ 
-              Navigator.pushNamed(context, 'accesos', arguments: { 'idResidencial': Preferences.idResidencial }); 
-            },
+          ListTileSliver(
+            icono: Icons.door_back_door, 
+            titulo: "Accesos", 
+            onTapFunction: () => Navigator.pushNamed(context, 'accesos', arguments: { 'idResidencial': Preferences.idResidencial })
           ),
 
-          ListTile(
-            leading: const Icon(Icons.info),
-            title: const Text("Info"),
-            onTap: (){},
+          ListTileSliver(
+            icono: Icons.info, 
+            titulo: "Info", 
+            onTapFunction: () {}
           ),
 
-          ListTile(
-            leading: const Icon(Icons.help),
-            title: const Text("Ayuda"),
-            onTap: (){},
+          ListTileSliver(
+            icono: Icons.help, 
+            titulo: "Ayuda", 
+            onTapFunction: () {}
           ),
 
-          ListTile(
-            leading: const Icon(Icons.map),
-            title: const Text("Mapa"),
-            onTap: (){ Navigator.pushNamed(context, 'mapa'); },
+          ListTileSliver(
+            icono: Icons.map, 
+            titulo: "Mapa", 
+            onTapFunction: () => Navigator.pushNamed(context, 'mapa')
           ),
 
-          ListTile(
-            leading: const Icon(Icons.logout),
-            title: const Text("Cerrar sesión"),
-            onTap: () async {
+          ListTileSliver(
+            icono: Icons.logout, 
+            titulo: "Cerrar sesión", 
+            onTapFunction: () {
               Preferences.isLogged = false;
               // ignore: use_build_context_synchronously
               Navigator.pushReplacementNamed(context, 'login'); 
-            },
+            }
           ),
 
         ]
+        
       )
     );
   }

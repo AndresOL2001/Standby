@@ -13,7 +13,7 @@ class Principal extends StatefulWidget {
 
 class _Principal extends State<Principal> with WidgetsBindingObserver{
 
-  StreamSubscription<ActivityEvent>? activityStreamSubscription;
+  static StreamSubscription<ActivityEvent>? activityStreamSubscription;
   List<ActivityEvent> _events = [];
   ActivityRecognition activityRecognition = ActivityRecognition();
 

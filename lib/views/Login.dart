@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:standby/model/nuevo_usuario.dart';
 import 'package:standby/shared_preferences/shared_preferences.dart';
+import 'package:standby/widgets/textfield_registro.dart';
 
 import '../provider/providers.dart';
 
 import '../services/auth_service.dart';
-import '../ui/input_decorations.dart';
 
 import '../widgets/auth_background.dart';
 import '../widgets/card_container.dart';
@@ -85,47 +85,29 @@ class _LoginForm extends StatelessWidget {
 
       child: Column(
         children: [
-          
-          TextFormField(
-            autocorrect: false,
-            keyboardType: TextInputType.phone,
-            decoration: InputDecorations.authInputDecoration(
-              hintText: '1122334455 (10 dígitos)',
-              labelText: 'Número de celular',
-              prefixIcon: Icons.numbers
-            ),
-            onChanged: ( value ) => loginForm.celular = value,
-            validator: ( value ) {
 
-                String pattern = r'^[0-9]{10}$';
-                RegExp regExp  = RegExp(pattern);
-                
-                return regExp.hasMatch(value ?? '')
-                  ? null
-                  : 'El valor ingresado no luce como un número de celular';
-
-            },
+          TextFieldRegistro(
+            obscureText: false,
+            tipoTexto: TextInputType.phone, 
+            textoHint: '1122334455 (10 dígitos)', 
+            textoLabel: 'Número de celular', 
+            icono: Icons.numbers, 
+            funcionOnChange: (value) => loginForm.celular = value, 
+            patron: r'^[0-9]{10}$', 
+            mensajeError: 'El valor ingresado no luce como un número de celular'
           ),
 
           const SizedBox( height: 30 ),
 
-          TextFormField(
-            autocorrect: false,
+          TextFieldRegistro(
             obscureText: true,
-            keyboardType: TextInputType.text,
-            decoration: InputDecorations.authInputDecoration(
-              hintText: '*****',
-              labelText: 'Contraseña',
-              prefixIcon: Icons.lock_outline
-            ),
-            onChanged: ( value ) => loginForm.password = value,
-            validator: ( value ) {
-
-                return ( value != null && value.length >= 6 ) 
-                  ? null
-                  : 'La contraseña debe de ser de 6 caracteres';                                    
-                
-            },
+            tipoTexto: TextInputType.text, 
+            textoHint: '*******', 
+            textoLabel: 'Contraseña', 
+            icono: Icons.lock_outline, 
+            funcionOnChange: (value) => loginForm.password = value, 
+            patron: r'^.{6,}$', 
+            mensajeError: 'La contraseña debe de ser de 6 caracteres'
           ),
 
           const SizedBox( height: 30 ),
@@ -145,7 +127,6 @@ class _LoginForm extends StatelessWidget {
 
               loginForm.isLoading = true;
 
-              
               final String? errorMessage = await authService.loginUser(
                 loginForm.celular, 
                 loginForm.password
@@ -164,9 +145,7 @@ class _LoginForm extends StatelessWidget {
                 
                 String direccionData = "${infoUser["calle"]} ${infoUser["numeroCasa"]}";
                 Preferences.direccionUsuario = utf8.decode(direccionData.runes.toList());
-
                 Preferences.idResidencial = infoUser["residencial"]["idResidencial"];
-                
                 Preferences.celularUsuario = loginForm.celular;
 
                 // ignore: use_build_context_synchronously
@@ -182,9 +161,6 @@ class _LoginForm extends StatelessWidget {
                   }
                 );
               }
-
-              // ignore: use_build_context_synchronously
-              //Navigator.pushReplacementNamed(context, 'home');
             },
             child: Container(
               padding: const EdgeInsets.symmetric( horizontal: 80, vertical: 15),

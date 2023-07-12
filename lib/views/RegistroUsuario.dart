@@ -4,8 +4,9 @@ import 'package:standby/shared_preferences/shared_preferences.dart';
 
 import '../provider/usuario_form_provider.dart';
 import '../services/auth_service.dart';
-import '../ui/input_decorations.dart';
 import 'package:standby/model/nuevo_usuario.dart';
+
+import '../widgets/textfield_registro.dart';
 
 class RegistroUsuario extends StatefulWidget {
   const RegistroUsuario({super.key});
@@ -33,150 +34,110 @@ class _RegistroUsuarioState extends State<RegistroUsuario> {
           child: Form(
             key: userForm.formKey,
             autovalidateMode: AutovalidateMode.onUserInteraction,
-            child: Column(
-              children: [
-              
-                datos?['tipo'] == "editar"
-                ? const SizedBox( height: 0 )
-                : TextFormField(
-                  autocorrect: false,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecorations.authInputDecoration(
-                    hintText: '123456',
-                    labelText: 'No. de serie',
-                    prefixIcon: Icons.numbers
-                  ),
-                  initialValue: user!.numeroSerie,
-                  onChanged: ( value ) => user.numeroSerie = value,
-                  validator: ( value ) {
-                      String pattern = r'^[0-9]+$';
-                      RegExp regExp  = RegExp(pattern);
-                      
-                      return regExp.hasMatch(value ?? '')
-                        ? null
-                        : 'El valor ingresado no luce como un numero de serie';
-                  },
-                ),
-                  
-                const SizedBox(height: 10),
-                  
-                TextFormField(
-                  autocorrect: false,
-                  keyboardType: TextInputType.phone,
-                  decoration: InputDecorations.authInputDecoration(
-                    hintText: '123456',
-                    labelText: 'No. de celular',
-                    prefixIcon: Icons.settings_cell_rounded
-                  ),
-                  initialValue: user!.celular,
-                  onChanged: ( value ) => user.celular = value,
-                  validator: ( value ) {
-                      String pattern = r'^[0-9]{10}$';
-                      RegExp regExp  = RegExp(pattern);
-                      
-                      return regExp.hasMatch(value ?? '')
-                        ? null
-                        : 'El valor ingresado no luce como un numero telefónico.';
-                  },
-                ),
-                  
-                const SizedBox(height: 10),
-                  
-                TextFormField(
-                  autocorrect: false,
-                  keyboardType: TextInputType.text,
-                  decoration: InputDecorations.authInputDecoration(
-                    hintText: 'Juan Perez',
-                    labelText: 'Primer nombre y apellido',
-                    prefixIcon: Icons.text_fields
-                  ),
-                  initialValue: user.nombreCompleto,
-                  onChanged: ( value ) => user.nombreCompleto = value,
-                  validator: ( value ) {
-                      String pattern = r'^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$';
-                      RegExp regExp  = RegExp(pattern);
-                      
-                      return regExp.hasMatch(value ?? '')
-                        ? null
-                        : 'El valor ingresado no luce como un nombre.';
-                  },
-                ),
-                  
-                const SizedBox(height: 10),
-                  
-                TextFormField(
-                  autocorrect: false,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecorations.authInputDecoration(
-                    hintText: '1152',
-                    labelText: 'Número de casa',
-                    prefixIcon: Icons.house
-                  ),
-                  initialValue: user.numeroCasa,
-                  onChanged: ( value ) => user.numeroCasa = value,
-                  validator: ( value ) {
-                      String pattern = r'^\d{1,4}$';
-                      RegExp regExp  = RegExp(pattern);
-                      
-                      return regExp.hasMatch(value ?? '')
-                        ? null
-                        : 'El valor ingresado no luce como un numero de casa.';
-                  },
-                ),
-                  
-                const SizedBox(height: 10),
-                  
-                TextFormField(
-                  autocorrect: false,
-                  keyboardType: TextInputType.text,
-                  decoration: InputDecorations.authInputDecoration(
-                    hintText: 'Matamoros',
-                    labelText: 'Calle',
-                    prefixIcon: Icons.map
-                  ),
-                  initialValue: user.calle,
-                  onChanged: ( value ) => user.calle = value,
-                  validator: ( value ) {
-                      String pattern = r'^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$';
-                      RegExp regExp  = RegExp(pattern);
-                      
-                      return regExp.hasMatch(value ?? '')
-                        ? null
-                        : 'El valor ingresado no luce como una calle.';
-                  },
-                ),
-                  
-                const SizedBox(height: 10),
-                  
-                TextFormField(
-                  autocorrect: false,
-                  keyboardType: TextInputType.text,
-                  decoration: InputDecorations.authInputDecoration(
-                    hintText: '*****',
-                    labelText: 'Contraseña',
-                    prefixIcon: Icons.lock
-                  ),
-                  initialValue: user.contrasena,
-                  onChanged: ( value ) => user.contrasena = value,
-                  validator: ( value ) {
-                    return ( value != null && value.length >= 6 ) 
-                    ? null
-                    : 'La contraseña debe de ser de 6 caracteres';
-                  },
-                ),
-          
-                const SizedBox(height: 20),
-
-                datos?['tipo'] == "editar"
-                ? _editarButton(userForm, context, user, datos?['numeroSerie'] ,datos?['idUsuario'])
-                : _registrarButton(userForm, context, user)
-                  
-              ],
-            ),
+            child: _textFieldsRegistro(datos, user, userForm, context),
           ),
         ),
       ),
     );
+  }
+
+  Column _textFieldsRegistro(Map<String, dynamic>? datos, NuevoUsuario? user, UserFormProvider userForm, BuildContext context) {
+    return Column(
+            children: [
+            
+              datos?['tipo'] == "editar"
+              ? const SizedBox( height: 0 )
+              : TextFieldRegistro(
+                  obscureText: false,
+                  tipoTexto: TextInputType.number, 
+                  textoHint: '123456',
+                  textoLabel: 'No. de serie', 
+                  icono: Icons.numbers, 
+                  initialValue: user!.numeroSerie,
+                  funcionOnChange: (value) => user.numeroSerie = value, 
+                  patron: r'^[0-9]+$', 
+                  mensajeError: 'El valor ingresado no luce como un numero de serie'
+                ),
+                
+              const SizedBox(height: 10),
+                
+
+              TextFieldRegistro(
+                  obscureText: false,
+                  tipoTexto: TextInputType.phone, 
+                  textoHint: '123456',
+                  textoLabel: 'No. de celular', 
+                  icono: Icons.settings_cell_rounded, 
+                  initialValue: user!.celular,
+                  funcionOnChange: (value) => user.celular = value, 
+                  patron: r'^[0-9]{10}$', 
+                  mensajeError: 'El valor ingresado no luce como un numero telefónico.'
+              ),
+                
+              const SizedBox(height: 10),
+
+              TextFieldRegistro(
+                  obscureText: false,
+                  tipoTexto: TextInputType.text, 
+                  textoHint: 'John Doe',
+                  textoLabel: 'Nombre y apellidos', 
+                  icono: Icons.text_fields, 
+                  initialValue: user.nombreCompleto,
+                  funcionOnChange: (value) => user.nombreCompleto = value, 
+                  patron: r'^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$', 
+                  mensajeError: 'El valor ingresado no luce como un nombre.'
+              ),
+                
+              const SizedBox(height: 10),
+
+              TextFieldRegistro(
+                  obscureText: false,
+                  tipoTexto: TextInputType.number, 
+                  textoHint: '1468',
+                  textoLabel: 'Número de casa', 
+                  icono: Icons.house, 
+                  initialValue: user.numeroCasa,
+                  funcionOnChange: (value) => user.numeroCasa = value, 
+                  patron: r'^\d{1,4}$', 
+                  mensajeError: 'El valor ingresado no luce como un numero de casa.'
+              ),
+                
+              const SizedBox(height: 10),
+
+              TextFieldRegistro(
+                  obscureText: false,
+                  tipoTexto: TextInputType.text, 
+                  textoHint: 'Matamoros',
+                  textoLabel: 'Calle', 
+                  icono: Icons.map, 
+                  initialValue: user.calle,
+                  funcionOnChange: (value) => user.calle = value, 
+                  patron: r'^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$', 
+                  mensajeError: 'El valor ingresado no luce como una calle.'
+              ),
+                
+              const SizedBox(height: 10),
+
+              TextFieldRegistro(
+                  obscureText: false,
+                  tipoTexto: TextInputType.text, 
+                  textoHint: '*****',
+                  textoLabel: 'Contraseña', 
+                  icono: Icons.lock, 
+                  initialValue: user.contrasena,
+                  funcionOnChange: (value) => user.contrasena = value, 
+                  patron:  r'^.{6,}$', 
+                  mensajeError: 'La contraseña debe de ser de 6 caracteres.'
+              ),
+        
+              const SizedBox(height: 20),
+
+              datos?['tipo'] == "editar"
+              ? _editarButton(userForm, context, user, datos?['numeroSerie'] ,datos?['idUsuario'])
+              : _registrarButton(userForm, context, user)
+                
+            ],
+          );
   }
 
   MaterialButton _registrarButton(UserFormProvider userForm, BuildContext context, NuevoUsuario user) {

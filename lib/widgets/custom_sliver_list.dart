@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:standby/model/acceso.dart';
 import 'package:standby/widgets/listtile_sliver.dart';
 
 import '../model/nuevo_usuario.dart';
@@ -106,7 +107,19 @@ class _CustomSliverListState extends State<CustomSliverList> {
           ListTileSliver(
             icono: Icons.map, 
             titulo: "Mapa", 
-            onTapFunction: () => Navigator.pushNamed(context, 'mapa')
+            onTapFunction: () async {
+              final String? dataResidencial = await authService.getResidencial( Preferences.idResidencial );
+              Map<String, dynamic> infoResidencial = jsonDecode(dataResidencial!);
+
+              List<Acceso> dataAccesos = await authService.getAccesos( Preferences.idResidencial );
+
+              // ignore: use_build_context_synchronously
+              Navigator.pushNamed(context, 'mapa', arguments: {
+                'listaAccesos': dataAccesos,
+                'latitudResidencial': infoResidencial["latitudResidencial"],
+                'longitudResidencial': infoResidencial["longitudResidencial"]
+              });
+            }
           ),
 
           ListTileSliver(

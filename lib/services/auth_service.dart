@@ -32,7 +32,7 @@ class AuthService extends ChangeNotifier{
       return resp.body;
     }
 
-  }
+  } // fin metodo
 
   Future<String?> loginUser( String celular, String contrasena ) async{
 
@@ -53,7 +53,7 @@ class AuthService extends ChangeNotifier{
       return resp.body;
     }
 
-  }
+  } // fin metodo
 
   Future<String?> getUserInfo( String celular ) async{
 
@@ -72,7 +72,7 @@ class AuthService extends ChangeNotifier{
     //   return resp.body;
     // }
 
-  }
+  } // fin metodo
 
   Future<String?> editUser( String numeroSerie, String idUsuario, String nombreCompleto, String calle, String numeroCasa, String celular, String contrasena ) async{
 
@@ -96,13 +96,28 @@ class AuthService extends ChangeNotifier{
       return resp.body;
     }
 
-  }
+  } // fin metodo
+
+  Future<String?> getResidencial( String idResidencial ) async{
+
+    final url = Uri.parse('$_baseUrl/api/residencial/$idResidencial');
+    final headers = {"Content-Type": "application/json;charset=UTF-8"};
+
+    final resp = await http.get(url, headers: headers);
+
+    if( resp.statusCode == 200 ){
+      return resp.body;
+    } else {
+      throw Exception('API Error');
+    }
+
+  } // fin metodo
 
   List<Acceso> parseAcceso(String responseBody){
     var list = json.decode(responseBody) as List<dynamic>;
     List<Acceso> accesos = list.map((model) => Acceso.fromJson(model)).toList();
     return accesos;
-  }
+  } // fin metodo
 
   Future<List<Acceso>> getAccesos( String idResidencial ) async{
 
@@ -117,6 +132,21 @@ class AuthService extends ChangeNotifier{
       throw Exception('API Error');
     }
 
-  }
+  } // fin metodo
+
+  Future<String?> getAccesosString( String idResidencial ) async{
+
+    final url = Uri.parse('$_baseUrl/api/accesos/residencial/$idResidencial');
+    final headers = {"Content-Type": "application/json;charset=UTF-8"};
+
+    final resp = await http.get(url, headers: headers);
+
+    if( resp.statusCode == 200 ){
+      return resp.body;
+    } else {
+      throw Exception('API Error');
+    }
+
+  } // fin metodo
 
 }

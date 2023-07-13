@@ -13,10 +13,9 @@ import 'package:standby/shared_preferences/shared_preferences.dart';
 import 'package:standby/views/Accesos.dart';
 import 'package:standby/views/Home.dart';
 import 'package:standby/views/Login.dart';
+import 'package:standby/views/MapResidencial.dart';
 import 'package:standby/views/Principal.dart';
 import 'package:standby/views/RegistroUsuario.dart';
-
-import 'views/Map.dart';
 
 //late SharedPreferences sharedPreferences;
 
@@ -85,9 +84,9 @@ class MyApp extends StatelessWidget {
         'login': ( _ ) => const LoginScreen(),
         'home' : ( _ ) => const Home(),
         'principal' : ( _ ) => const Principal(),
-        'mapa' : ( _ ) => const Map(),
+        'mapa' : ( _ ) => const MapResidencial(),
         'registro_usuario' : ( _ ) => const RegistroUsuario(),
-        'accesos' : ( _ ) => Accesos(),
+        'accesos' : ( _ ) => const Accesos(),
       },
     );
   }

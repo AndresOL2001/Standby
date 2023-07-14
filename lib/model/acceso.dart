@@ -1,3 +1,7 @@
+// To parse this JSON data, do
+//
+//     final acceso = accesoFromJson(jsonString);
+
 import 'dart:convert';
 
 Acceso accesoFromJson(String str) => Acceso.fromJson(json.decode(str));
@@ -7,20 +11,20 @@ String accesoToJson(Acceso data) => json.encode(data.toJson());
 class Acceso {
     String idAcceso;
     String direccion;
-    dynamic precio;
-    dynamic nombre;
+    double precio;
+    String nombre;
+    int radio;
     String latitudCaseta;
     String longitudCaseta;
-    bool isSelected;
 
     Acceso({
         required this.idAcceso,
         required this.direccion,
         required this.precio,
         required this.nombre,
+        required this.radio,
         required this.latitudCaseta,
         required this.longitudCaseta,
-        this.isSelected = false
     });
 
     factory Acceso.fromJson(Map<String, dynamic> json) => Acceso(
@@ -28,6 +32,7 @@ class Acceso {
         direccion: json["direccion"],
         precio: json["precio"],
         nombre: json["nombre"],
+        radio: json["radio"],
         latitudCaseta: json["latitudCaseta"],
         longitudCaseta: json["longitudCaseta"],
     );
@@ -37,6 +42,7 @@ class Acceso {
         "direccion": direccion,
         "precio": precio,
         "nombre": nombre,
+        "radio": radio,
         "latitudCaseta": latitudCaseta,
         "longitudCaseta": longitudCaseta,
     };

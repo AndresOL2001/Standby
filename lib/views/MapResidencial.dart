@@ -141,7 +141,7 @@ class _MapResidencialState extends State<MapResidencial> {
           double.parse(datosResidencial["latitudResidencial"]),
           double.parse(datosResidencial["longitudResidencial"]),
         ),
-        radius: 10, // Radio en metros
+        radius: datosResidencial["radioResidencial"].toDouble(), // Radio en metros
         fillColor: Colors.red.withOpacity(0.2), // Color de relleno
         strokeColor: Colors.red, // Color de borde
         strokeWidth: 2, // Ancho de borde en píxeles
@@ -156,7 +156,7 @@ class _MapResidencialState extends State<MapResidencial> {
       return Circle(
         circleId: CircleId(acceso.idAcceso),
         center: LatLng(latitud, longitud),
-        radius: 3, // Radio en metros
+        radius: acceso.radio.toDouble(), // Radio en metros
         fillColor: Colors.blue.withOpacity(0.2), // Color de relleno
         strokeColor: Colors.blue, // Color de borde
         strokeWidth: 2, // Ancho de borde en píxeles

@@ -113,9 +113,12 @@ class _CustomSliverListState extends State<CustomSliverList> {
 
               List<Acceso> dataAccesos = await authService.getAccesos( Preferences.idResidencial );
 
+              print(dataResidencial);
+
               // ignore: use_build_context_synchronously
               Navigator.pushNamed(context, 'mapa', arguments: {
                 'listaAccesos': dataAccesos,
+                'radioResidencial': infoResidencial["radio"],
                 'latitudResidencial': infoResidencial["latitudResidencial"],
                 'longitudResidencial': infoResidencial["longitudResidencial"]
               });

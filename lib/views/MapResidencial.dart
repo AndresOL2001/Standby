@@ -11,6 +11,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:standby/model/acceso.dart';
 import 'package:standby/shared_preferences/shared_preferences.dart';
 
+import '../services/NotificationsServices.dart';
+
 class MapResidencial extends StatefulWidget {
   
   const MapResidencial({super.key});
@@ -27,6 +29,8 @@ class _MapResidencialState extends State<MapResidencial> {
       "latitude": 29.094597,
       "longitude": -110.954259
   });
+  static bool notificacionEnviada = false;
+  static bool entroEnCasa = false;
 
   IconData icono = Icons.stop;
   final service = FlutterBackgroundService();
@@ -234,26 +238,37 @@ class _MapResidencialState extends State<MapResidencial> {
         var sharedPreferences = await SharedPreferences.getInstance();
         await sharedPreferences.reload();
         double? distanciaResidencial = sharedPreferences.getDouble("distanciaResidenciall");
-        //String distanciaRecortada = distanciaResidencial!.toStringAsFixed(3);
+        String distanciaRecortada = distanciaResidencial!.toStringAsFixed(3);
 
 
-        // if( distanciaResidencial < 1.0 ){
-        //   distanciaRecortada = "${double.parse(distanciaRecortada) * 1000} mts";
-        // } else {
-        //   distanciaRecortada = "$distanciaRecortada km";
-        // }
+        if( distanciaResidencial < 1.0 ){
+          distanciaRecortada = "${double.parse(distanciaRecortada) * 1000} mts";
+        } else {
+          distanciaRecortada = "$distanciaRecortada km";
+        }
 
         if( service is AndroidServiceInstance ){
           if( await service.isForegroundService() ){
             service.setForegroundNotificationInfo(
               title: "Standby en plano", 
-              content: "Estas a $distanciaResidencial"
+              content: "Estas a $distanciaRecortada"
             );
           }
         }
-        //Operaciones que no son visibles pal usuario
       
         //----------- Parte para las notificaciones segun la distancia ---------------------
+
+        if(distanciaResidencial <= 0.05){
+          entroEnCasa = true;
+        }else{
+          entroEnCasa = false;
+          notificacionEnviada = false;
+        }
+
+        if(entroEnCasa && notificacionEnviada == false){
+          notificacionEnviada = true;
+          mostrarNotificacion("ENTRANDO A LA RESIDENCIAL");
+        }
 
       
       // print("Esta en casa:$entroEnCasa");

@@ -305,7 +305,6 @@ final TextEditingController latitudController = TextEditingController();
 
   @pragma('vm-entry-point')
   Future<bool> onIosBackground(ServiceInstance service) async{
-    WidgetsFlutterBinding.ensureInitialized();
     DartPluginRegistrant.ensureInitialized();
     return true;
   }

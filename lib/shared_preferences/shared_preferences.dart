@@ -16,6 +16,10 @@ class Preferences{
   //Funcion habilitar y deshabilitar
   static bool _isAvailable = false;
 
+  //Mapa
+  static double _latitudResidencial = 0;
+  static double _longitudResidencial = 0;
+
   static Future init() async {
     _prefs = await SharedPreferences.getInstance();
   }
@@ -76,6 +80,25 @@ class Preferences{
   static set isAvailable( bool value ){
     _isAvailable = value;
     _prefs.setBool('isAvailable', value);
+  }
+
+  // ------------------ MAPA -------------------------
+  static double get latitudResidencial{
+    return _prefs.getDouble('latitudResidencial') ?? _latitudResidencial;
+  }
+
+  static set latitudResidencial( double value ){
+    _latitudResidencial = value;
+    _prefs.setDouble('latitudResidencial', value);
+  }
+
+  static double get longitudResidencial{
+    return _prefs.getDouble('longitudResidencial') ?? _longitudResidencial;
+  }
+
+  static set longitudResidencial( double value ){
+    _longitudResidencial = value;
+    _prefs.setDouble('longitudResidencial', value);
   }
   
 }

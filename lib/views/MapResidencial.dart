@@ -59,11 +59,12 @@ class _MapResidencialState extends State<MapResidencial> {
 
     final Map<String, dynamic>? datosResidencial = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
     final List<Acceso> listaAccesos = datosResidencial!["listaAccesos"];
+    final double radioResidencial = datosResidencial["radioResidencial"].toDouble();
 
     Preferences.latitudResidencial = double.parse(datosResidencial["latitudResidencial"]);
     Preferences.longitudResidencial = double.parse(datosResidencial["longitudResidencial"]);
 
-    Set<Circle> circleSet = generacionGeovallas(datosResidencial, listaAccesos);
+    Set<Circle> circleSet = generacionGeovallas(datosResidencial, listaAccesos, radioResidencial);
 
     return Scaffold(
       floatingActionButton: FloatingActionButton(
@@ -132,7 +133,16 @@ class _MapResidencialState extends State<MapResidencial> {
       );
     }
 
-  Set<Circle> generacionGeovallas(Map<String, dynamic> datosResidencial, List<Acceso> listaAccesos) {
+  void preferences(double radioResidencial) async{
+    var sharedPreferences = await SharedPreferences.getInstance();
+    sharedPreferences.setDouble('radioResidencial', radioResidencial);
+    setState(() {});
+  }
+
+  Set<Circle> generacionGeovallas(Map<String, dynamic> datosResidencial, List<Acceso> listaAccesos, double radioResidencial) {
+
+    preferences(radioResidencial);
+
     //Geovalla residencial
     Set<Circle> circleSet = <Circle>{
       Circle(
@@ -141,7 +151,7 @@ class _MapResidencialState extends State<MapResidencial> {
           double.parse(datosResidencial["latitudResidencial"]),
           double.parse(datosResidencial["longitudResidencial"]),
         ),
-        radius: datosResidencial["radioResidencial"].toDouble(), // Radio en metros
+        radius: radioResidencial, // Radio en metros
         fillColor: Colors.red.withOpacity(0.2), // Color de relleno
         strokeColor: Colors.red, // Color de borde
         strokeWidth: 2, // Ancho de borde en píxeles
@@ -238,27 +248,29 @@ class _MapResidencialState extends State<MapResidencial> {
         var sharedPreferences = await SharedPreferences.getInstance();
         await sharedPreferences.reload();
         double? distanciaResidencial = sharedPreferences.getDouble("distanciaResidenciall");
-        String distanciaRecortada = distanciaResidencial!.toStringAsFixed(3);
+        double distanciaRecortada = double.parse(distanciaResidencial!.toStringAsFixed(3));
+        distanciaRecortada = distanciaRecortada * 1000;
 
+        double? radioResidencial = sharedPreferences.getDouble("radioResidencial");
 
-        if( distanciaResidencial < 1.0 ){
-          distanciaRecortada = "${double.parse(distanciaRecortada) * 1000} mts";
-        } else {
-          distanciaRecortada = "$distanciaRecortada km";
-        }
+        // if( distanciaResidencial < 1.0 ){
+        //   distanciaRecortada = "${double.parse(distanciaRecortada) * 1000} mts";
+        // } else {
+        //   distanciaRecortada = "$distanciaRecortada km";
+        // }
 
         if( service is AndroidServiceInstance ){
           if( await service.isForegroundService() ){
             service.setForegroundNotificationInfo(
               title: "Standby en plano", 
-              content: "Estas a $distanciaRecortada"
+              content: "Estas a $distanciaRecortada mts"
             );
           }
         }
       
         //----------- Parte para las notificaciones segun la distancia ---------------------
 
-        if(distanciaResidencial <= 0.05){
+        if(distanciaRecortada <= radioResidencial!){
           entroEnCasa = true;
         }else{
           entroEnCasa = false;
@@ -269,11 +281,6 @@ class _MapResidencialState extends State<MapResidencial> {
           notificacionEnviada = true;
           mostrarNotificacion("ENTRANDO A LA RESIDENCIAL");
         }
-
-      
-      // print("Esta en casa:$entroEnCasa");
-      // print("Esta en caseta:$entroEnCaseta");
-
 
     
   //-----------------------------------------------------------------------------------

@@ -17,6 +17,7 @@ class Preferences{
   static bool _isAvailable = false;
 
   //Mapa
+
   static double _latitudResidencial = 0;
   static double _longitudResidencial = 0;
 

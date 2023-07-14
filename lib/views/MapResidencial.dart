@@ -7,6 +7,7 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:standby/model/acceso.dart';
 import 'package:standby/shared_preferences/shared_preferences.dart';
 
@@ -184,7 +185,8 @@ class _MapResidencialState extends State<MapResidencial> {
           cos(lat1 * p) * cos(lat2 * p) * 
           (1 - cos((lon2 - lon1) * p))/2;
     _distance =  12742 * asin(sqrt(a));
-    print("DISTANCIA $_distance");
+    var sharedPreferences = await SharedPreferences.getInstance();
+    sharedPreferences.setDouble('distanciaResidenciall', _distance);
     setState(() {});
   }
 
@@ -229,8 +231,10 @@ class _MapResidencialState extends State<MapResidencial> {
       });
 
       Timer.periodic(const Duration(seconds: 3), (timer) async{
-        double? distanciaResidencial = _distance;
-        String distanciaRecortada = distanciaResidencial.toStringAsFixed(3);
+        var sharedPreferences = await SharedPreferences.getInstance();
+        await sharedPreferences.reload();
+        double? distanciaResidencial = sharedPreferences.getDouble("distanciaResidenciall");
+        //String distanciaRecortada = distanciaResidencial!.toStringAsFixed(3);
 
 
         // if( distanciaResidencial < 1.0 ){
@@ -243,7 +247,7 @@ class _MapResidencialState extends State<MapResidencial> {
           if( await service.isForegroundService() ){
             service.setForegroundNotificationInfo(
               title: "Standby en plano", 
-              content: "Estas a $_distance"
+              content: "Estas a $distanciaResidencial"
             );
           }
         }

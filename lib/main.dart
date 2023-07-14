@@ -14,6 +14,7 @@ import 'package:standby/views/Accesos.dart';
 import 'package:standby/views/Home.dart';
 import 'package:standby/views/Login.dart';
 import 'package:standby/views/MapResidencial.dart';
+import 'package:standby/views/Map.dart';
 import 'package:standby/views/Principal.dart';
 import 'package:standby/views/RegistroUsuario.dart';
 

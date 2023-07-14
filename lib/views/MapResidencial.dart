@@ -25,12 +25,17 @@ class _MapResidencialState extends State<MapResidencial> {
 
   static double _distance = 0;
   final Completer<GoogleMapController> _controller = Completer();
+  
   LocationData currentLocation = LocationData.fromMap({
       "latitude": 29.094597,
       "longitude": -110.954259
   });
+
   static bool notificacionEnviada = false;
   static bool entroEnCasa = false;
+  static bool entroEnCaseta = false;
+
+  static late List<Acceso> listaAccesos;
 
   IconData icono = Icons.stop;
   final service = FlutterBackgroundService();
@@ -58,7 +63,7 @@ class _MapResidencialState extends State<MapResidencial> {
   Widget build(BuildContext context) {
 
     final Map<String, dynamic>? datosResidencial = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
-    final List<Acceso> listaAccesos = datosResidencial!["listaAccesos"];
+    listaAccesos = datosResidencial!["listaAccesos"];
     final double radioResidencial = datosResidencial["radioResidencial"].toDouble();
 
     Preferences.latitudResidencial = double.parse(datosResidencial["latitudResidencial"]);
@@ -92,7 +97,7 @@ class _MapResidencialState extends State<MapResidencial> {
           // ignore: unnecessary_null_comparison
           child: currentLocation == null
               ? const Center(child: Text("Loading"))
-              : _googleMap(datosResidencial, circleSet),
+              : _googleMap(datosResidencial, circleSet, listaAccesos),
               //: Center(child: Text("${listaAccesos}"))
         ),
     );
@@ -100,7 +105,7 @@ class _MapResidencialState extends State<MapResidencial> {
 
 
 
-  _googleMap(datosResidencial, circleSet){
+  _googleMap(datosResidencial, circleSet, List<Acceso> listaAccesos){
       final latitud = double.parse(datosResidencial["latitudResidencial"]);
       final longitud = double.parse(datosResidencial["longitudResidencial"]);
 
@@ -123,6 +128,8 @@ class _MapResidencialState extends State<MapResidencial> {
                   "latitude": value.latitude,
                   "longitude": value.longitude
               });
+
+              calcularDistanciaAccesos(listaAccesos);
               await calculateDistance(currentLocation.latitude, currentLocation.longitude, Preferences.latitudResidencial, Preferences.longitudResidencial);
             },
           )
@@ -133,15 +140,17 @@ class _MapResidencialState extends State<MapResidencial> {
       );
     }
 
-  void preferences(double radioResidencial) async{
+  void preferencesRadios(double radioResidencial, double radioCaseta) async{
     var sharedPreferences = await SharedPreferences.getInstance();
     sharedPreferences.setDouble('radioResidencial', radioResidencial);
+    sharedPreferences.setDouble('radioCaseta', radioCaseta);
+
     setState(() {});
   }
 
   Set<Circle> generacionGeovallas(Map<String, dynamic> datosResidencial, List<Acceso> listaAccesos, double radioResidencial) {
 
-    preferences(radioResidencial);
+    preferencesRadios(radioResidencial, listaAccesos[0].radio.toDouble());
 
     //Geovalla residencial
     Set<Circle> circleSet = <Circle>{
@@ -199,9 +208,29 @@ class _MapResidencialState extends State<MapResidencial> {
           cos(lat1 * p) * cos(lat2 * p) * 
           (1 - cos((lon2 - lon1) * p))/2;
     _distance =  12742 * asin(sqrt(a));
+
     var sharedPreferences = await SharedPreferences.getInstance();
     sharedPreferences.setDouble('distanciaResidenciall', _distance);
     setState(() {});
+  }
+
+  double calcularDistancia(lat1, lon1, lat2, lon2) {
+    var p = 0.017453292519943295;
+    var a = 0.5 - cos((lat2 - lat1) * p)/2 + 
+          cos(lat1 * p) * cos(lat2 * p) * 
+          (1 - cos((lon2 - lon1) * p))/2;
+    var distancia = 12742 * asin(sqrt(a));
+    distancia = double.parse(distancia.toStringAsFixed(3));
+    return distancia * 1000;
+  }
+
+  void calcularDistanciaAccesos(List<Acceso> listaAccesos) async{
+    List<String> distancias = [];
+    var sharedPreferences = await SharedPreferences.getInstance();
+    for (int i = 0; i < listaAccesos.length; i++) {
+      distancias.add( calcularDistancia(currentLocation.latitude, currentLocation.longitude, double.parse(listaAccesos[i].latitudCaseta), double.parse(listaAccesos[i].longitudCaseta) ).toString() );
+    }
+    sharedPreferences.setStringList("listaDistancias", distancias);
   }
 
   @pragma('vm-entry-point')
@@ -245,13 +274,18 @@ class _MapResidencialState extends State<MapResidencial> {
       });
 
       Timer.periodic(const Duration(seconds: 3), (timer) async{
+
         var sharedPreferences = await SharedPreferences.getInstance();
         await sharedPreferences.reload();
+
         double? distanciaResidencial = sharedPreferences.getDouble("distanciaResidenciall");
         double distanciaRecortada = double.parse(distanciaResidencial!.toStringAsFixed(3));
         distanciaRecortada = distanciaRecortada * 1000;
 
         double? radioResidencial = sharedPreferences.getDouble("radioResidencial");
+        double? radioCaseta = sharedPreferences.getDouble("radioCaseta");
+
+        List<String>? distancias = sharedPreferences.getStringList("listaDistancias") ?? [];
 
         // if( distanciaResidencial < 1.0 ){
         //   distanciaRecortada = "${double.parse(distanciaRecortada) * 1000} mts";
@@ -270,19 +304,42 @@ class _MapResidencialState extends State<MapResidencial> {
       
         //----------- Parte para las notificaciones segun la distancia ---------------------
 
-        if(distanciaRecortada <= radioResidencial!){
-          entroEnCasa = true;
-        }else{
-          entroEnCasa = false;
-          notificacionEnviada = false;
-        }
+        for(int i = 0; i < distancias.length ; i++){
+          double distanciaCaseta = double.parse(distancias[i]);
 
-        if(entroEnCasa && notificacionEnviada == false){
-          notificacionEnviada = true;
-          mostrarNotificacion("ENTRANDO A LA RESIDENCIAL");
-        }
+          if(distanciaRecortada <= radioResidencial!){
+            entroEnCasa = true;
+          }else{
+            entroEnCasa = false;
+            notificacionEnviada = false;
+          }
 
-    
+          if(entroEnCasa && notificacionEnviada == false){
+            notificacionEnviada = true;
+            mostrarNotificacion("ENTRANDO A LA RESIDENCIAL");
+          }
+
+        //--------------------------------------------------
+          if(distanciaRecortada <= radioResidencial){
+            entroEnCasa = true;
+          }else{
+            entroEnCasa = false;
+            notificacionEnviada = false;
+          }
+
+          if(distanciaCaseta <= radioCaseta!){
+            entroEnCaseta = true;
+          } else{
+            entroEnCaseta = false;
+          }
+
+          if(entroEnCasa && entroEnCaseta && notificacionEnviada == false){
+            notificacionEnviada = true;
+            //print("NOTIFICACION ENVIADA!!");
+            mostrarNotificacion("ENTRANDO A LA RESIDENCIAL");
+          }
+          
+        }//fin for
   //-----------------------------------------------------------------------------------
         
         service.invoke("update");

@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
@@ -21,6 +22,7 @@ import 'package:standby/views/RegistroUsuario.dart';
 //late SharedPreferences sharedPreferences;
 
 void main() async{
+  Stripe.publishableKey = "pk_test_51NgIgBDxEzW2L8puKidxqRts08Lv8LUeRjdpOYolNBs7NJwtbIWEZUc1HPlalvodu6goeh6z0eCypyMsuuM7rQoH00wH1tUFZj";
   //Para las notificaciones se hizo async el metodo main
   //Para ejecutar las inicializaciones de las notificaciones
   WidgetsFlutterBinding();

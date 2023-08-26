@@ -1,13 +1,21 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:provider/provider.dart';
 
+import '../helpers/alertas.dart';
 import '../model/acceso.dart';
 import '../services/auth_service.dart';
 
+import 'package:http/http.dart' as http;
+
+import 'package:standby/services/stripe_service.dart';
+
 class AccesosRadio extends StatefulWidget {
   final String idResidencial;
+  
   const AccesosRadio({super.key, required this.idResidencial});
-
   @override
   State<AccesosRadio> createState() => _AccesosRadio();
 }
@@ -39,7 +47,15 @@ class _AccesosRadio extends State<AccesosRadio> {
               Text(
                 "Precio total: \$ $precioTotal MXN",
                 style: const TextStyle( fontSize: 16 ),
-              )
+              ),
+
+              const SizedBox( height: 20 ),
+
+              ( precioTotal > 0 ) 
+              ? _buttonPay( amount: precioTotal )
+              : const Text("Selecciona minimo 1 acceso")
+              
+
             ]
           );
 
@@ -80,5 +96,46 @@ class _AccesosRadio extends State<AccesosRadio> {
   Future<List<Acceso>> consultaAccesos(String idResidencial) async {
     final authService = Provider.of<AuthService>(context, listen: false);
     return await authService.getAccesos(idResidencial);
+  }
+}
+
+class _buttonPay extends StatelessWidget {
+
+  final double amount;
+
+  _buttonPay({
+    required this.amount,
+  });
+
+final stripeService = StripeService();
+
+  Map<String, dynamic>? paymentIntent;
+
+  
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 40,
+      child: Container(
+        padding: const EdgeInsets.only( left: 15, right: 15 ),
+        child: ElevatedButton(
+          onPressed: () async {
+              
+            try{
+            final response = await stripeService.makePayment(
+              amount: '${ (amount * 100).floor() }', 
+              currency: "MXN"
+            );
+            } catch(e){
+              mostrarAlerta(context, "Epa", e.toString());
+            }
+                    
+          }, 
+          child: const Text("Pagar", style: TextStyle( fontSize: 16 ), )
+        ),
+      ),
+    );
   }
 }

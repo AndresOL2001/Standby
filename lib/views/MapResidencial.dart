@@ -25,7 +25,7 @@ class _MapResidencialState extends State<MapResidencial> {
 
   static double _distance = 0;
   final Completer<GoogleMapController> _controller = Completer();
-  
+
   LocationData currentLocation = LocationData.fromMap({
       "latitude": 29.094597,
       "longitude": -110.954259
@@ -49,7 +49,7 @@ class _MapResidencialState extends State<MapResidencial> {
 
   @override
   initState() {
-    //getCurrentLocation();
+    getCurrentLocation();
     initializeService();
     super.initState();
   }
@@ -110,7 +110,7 @@ class _MapResidencialState extends State<MapResidencial> {
       final longitud = double.parse(datosResidencial["longitudResidencial"]);
 
       return GoogleMap(
-        //myLocationEnabled: true,
+        myLocationEnabled: true,
         compassEnabled: true,
         initialCameraPosition: CameraPosition(
           target: LatLng(latitud,longitud),
@@ -196,6 +196,7 @@ class _MapResidencialState extends State<MapResidencial> {
     //GoogleMapController googleMapController = await _controller.future;
     location.onLocationChanged.listen((newLoc) async {
       currentLocation = newLoc;
+      calcularDistanciaAccesos(listaAccesos);
       await calculateDistance(currentLocation.latitude, currentLocation.longitude, Preferences.latitudResidencial, Preferences.longitudResidencial);
       //setState(() {});
     });

@@ -48,6 +48,7 @@ dependencies:
   provider: ^6.0.5
   http: ^0.13.4
   activity_recognition_flutter: ^4.2.0
+  flutter_stripe: ^9.3.0
   #flutter_activity_recognition: ^2.0.0
   #flutter_motion: ^0.0.3
   #pedometer: ^3.0.0

@@ -9,13 +9,13 @@ class Accesos extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Map<String, dynamic>? datos = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
-    String id = datos!['idResidencial'];
+    String id = datos!['idUsuario'];
      
     return Scaffold(
       appBar: AppBar(
         title: const Text("Accesos"),
       ),
-      body: AccesosRadio(idResidencial: id),
+      body: AccesosRadio(idUsuario: id),
     );
   }
 }

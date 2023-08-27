@@ -1,21 +1,17 @@
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:provider/provider.dart';
 
 import '../helpers/alertas.dart';
-import '../model/acceso.dart';
+import '../model/acceso_usuario.dart';
 import '../services/auth_service.dart';
-
-import 'package:http/http.dart' as http;
 
 import 'package:standby/services/stripe_service.dart';
 
 class AccesosRadio extends StatefulWidget {
-  final String idResidencial;
+  final String idUsuario;
   
-  const AccesosRadio({super.key, required this.idResidencial});
+  const AccesosRadio({super.key, required this.idUsuario});
   @override
   State<AccesosRadio> createState() => _AccesosRadio();
 }
@@ -29,8 +25,8 @@ class _AccesosRadio extends State<AccesosRadio> {
   Widget build(BuildContext context) {
     
 
-    return FutureBuilder<List<Acceso>>(
-      future: consultaAccesos(widget.idResidencial),
+    return FutureBuilder<List<AccesoUsuario>>(
+      future: consultaAccesos(widget.idUsuario),
       builder: (context, snapshot ) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -64,38 +60,46 @@ class _AccesosRadio extends State<AccesosRadio> {
     );
   }
 
-  SizedBox _listaAccesos(BuildContext context, AsyncSnapshot<List<Acceso>> snapshot) {
+  SizedBox _listaAccesos(BuildContext context, AsyncSnapshot<List<AccesoUsuario>> snapshot) {
     return SizedBox(
               height: MediaQuery.of(context).size.height * 0.4,
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 children: snapshot.data!
-                    .map((acceso) => Container(
-                          margin: const EdgeInsets.only(bottom: 16),
-                          child: CheckboxListTile(
+                    .map((acceso) =>
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        child: 
+                        ( !acceso.active )
+                        ? CheckboxListTile(
                             value: selectedItems.any((element) => element["idAcceso"] == acceso.idAcceso),
                             onChanged: (value) {
-                                setState(() {
-                                  if (value!) {
-                                    selectedItems.add({ "idAcceso": acceso.idAcceso, "precio" : acceso.precio });
-                                  } else {
-                                    selectedItems.removeWhere((item) => item['idAcceso'] == acceso.idAcceso);
-                                  }
-                                });
+                              setState(() {
+                                if (value!) {
+                                  selectedItems.add({ "idAcceso": acceso.idAcceso, "precio" : acceso.precio });
+                                } else {
+                                  selectedItems.removeWhere((item) => item['idAcceso'] == acceso.idAcceso);
+                                }
+                              });
                             },
                             title: Text(acceso.nombre),
                             subtitle: Text(acceso.direccion),
                             secondary: Text('\$ ${acceso.precio} MXN'),
-                          ),
-                        ))
+                          )
+                        : ListTile(
+                          leading: const Icon( Icons.check ),
+                          title: Text( acceso.direccion ),
+                        )
+                      )
+                    )
                     .toList(),
               ),
             );
   }
 
-  Future<List<Acceso>> consultaAccesos(String idResidencial) async {
+  Future<List<AccesoUsuario>> consultaAccesos(String idUsuario) async {
     final authService = Provider.of<AuthService>(context, listen: false);
-    return await authService.getAccesos(idResidencial);
+    return await authService.getAccesosUsuario(idUsuario);
   }
 }
 
@@ -124,10 +128,15 @@ final stripeService = StripeService();
           onPressed: () async {
               
             try{
-            final response = await stripeService.makePayment(
-              amount: '${ (amount * 100).floor() }', 
-              currency: "MXN"
-            );
+              final response = await stripeService.makePayment(
+                amount: '${ (amount * 100).floor() }', 
+                currency: "MXN"
+              );
+
+              if( response.ok ){
+                print("Se hizo");
+              }
+            
             } catch(e){
               mostrarAlerta(context, "Epa", e.toString());
             }

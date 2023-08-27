@@ -45,18 +45,6 @@ class StripeService{
   }) async{
 
     try{
-
-      // final dio = Dio();
-
-      // final data = {
-      //   "amount": amount,
-      //   "currency": currency
-      // };
-
-      // final response = await dio.post(
-      //   _paymentApiUrl,
-      //   data: data,
-      //   options: headerOptions
       // );
 
       // return PaymentIntentResponse.fromJson(response.data);
@@ -84,8 +72,9 @@ class StripeService{
   void displayPaymentSheet(){
     try {
       fs.Stripe.instance.presentPaymentSheet();
+      fs.Stripe.instance.confirmPaymentSheetPayment();
     } catch (e) {
-      print("Error: ${e.toString()}");
+      print("Errorrr: ${e.toString()}");
     }
   } //fin metodo
 
@@ -109,20 +98,22 @@ class StripeService{
           style: ThemeMode.dark,
           merchantDisplayName: "Stand By",
           googlePay: gpay,
-          customFlow: false,
         )
-      );
+      ).then((value) => {});
 
-      displayPaymentSheet();
+      //displayPaymentSheet();
 
-      
+      await fs.Stripe.instance.presentPaymentSheet().then(( (value) => {
+        // TODOOOOO: REGISTRAR QUE EL USUARIO PAGO
+        print("Exito papu")
+      }));
+
+      return StripeCustomResponse(ok: true);
+
 
     } catch (e) {
       print("ERROR ${e.toString()}");
       return StripeCustomResponse(ok: false, msg: e.toString());
-    } finally {
-      print("Pagado chaval");
-      return StripeCustomResponse(ok: true);
     }
 
   }

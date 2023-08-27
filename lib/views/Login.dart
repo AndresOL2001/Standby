@@ -142,6 +142,8 @@ class _LoginForm extends StatelessWidget {
 
                 //Se actualiza el nombre del usuario y la direccion
                 Preferences.nombreUsuario = utf8.decode(infoUser["nombreCompleto"].runes.toList());
+
+                Preferences.idUsuario = infoUser["idUsuario"];
                 
                 String direccionData = "${infoUser["calle"]} ${infoUser["numeroCasa"]}";
                 Preferences.direccionUsuario = utf8.decode(direccionData.runes.toList());

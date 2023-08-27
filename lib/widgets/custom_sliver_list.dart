@@ -89,7 +89,7 @@ class _CustomSliverListState extends State<CustomSliverList> {
           ListTileSliver(
             icono: Icons.door_back_door, 
             titulo: "Accesos", 
-            onTapFunction: () => Navigator.pushNamed(context, 'accesos', arguments: { 'idResidencial': Preferences.idResidencial })
+            onTapFunction: () => Navigator.pushNamed(context, 'accesos', arguments: { 'idUsuario': Preferences.idUsuario })
           ),
 
           ListTileSliver(

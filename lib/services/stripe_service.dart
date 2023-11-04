@@ -81,8 +81,12 @@ class StripeService{
 
 
   Future<StripeCustomResponse> makePayment({
+    required BuildContext context,
     required String amount,
+    required double numericAmount,
     required String currency,
+    required List<Map<String, dynamic>> idAccesos,
+    required String idUsuario
   }) async{
     try {
       paymentIntent = await crearPaymentIntent( amount: amount, currency: currency );
@@ -104,8 +108,16 @@ class StripeService{
       //displayPaymentSheet();
 
       await fs.Stripe.instance.presentPaymentSheet().then(( (value) => {
-        // TODOOOOO: REGISTRAR QUE EL USUARIO PAGO
-        print("Exito papu")
+        idAccesos.forEach((Map<String, dynamic> acceso) {
+          final errorMessage = createPago(acceso["idAcceso"], idUsuario, acceso['precio']);
+          if( errorMessage != null ){
+            print("Error: $errorMessage");
+          }
+        }),
+        Navigator.pushReplacementNamed(context, 'pago_completo', arguments: {
+          'listaAccesos': idAccesos,
+          'total' : numericAmount
+        })
       }));
 
       return StripeCustomResponse(ok: true);
@@ -117,4 +129,27 @@ class StripeService{
     }
 
   }
+
+
+  Future<String?> createPago( String idAcceso, String idUsuario, double cantidad ) async{
+
+    final Map<String, dynamic> pago ={
+      'idAcceso': idAcceso,
+      'idUsuario': idUsuario,
+      'cantidad': cantidad
+    };
+
+    final url = Uri.parse('http://146.190.52.172/api/pagos');
+    final headers = {"Content-Type": "application/json;charset=UTF-8"};
+
+    final resp = await http.post(url, headers: headers, body: json.encode(pago));
+
+    if (resp.statusCode == 200) {
+      return null;
+    } else {
+      return resp.body;
+    }
+
+  } // fin metodo
+
 }

@@ -13,6 +13,7 @@ class Preferences{
   static String _celularUsuario = "";
   static String _idResidencial = "";
   static String _idUsuario = "";
+  static int _compartidas = 0 ;
 
   //Funcion habilitar y deshabilitar
   static bool _isAvailable = false;
@@ -111,6 +112,16 @@ class Preferences{
   static set idUsuario( String value ){
     _idUsuario = value;
     _prefs.setString('idUsuario', value);
+  }
+
+   // ------------------- COMPARTIDAS -------------------
+  static int get compartidas{
+    return _prefs.getInt('compartidas') ?? _compartidas;
+  }
+
+  static set compartidas( int value ){
+    _compartidas = value;
+    _prefs.setInt('compartidas', value);
   }
   
 }

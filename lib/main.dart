@@ -15,6 +15,7 @@ import 'package:standby/views/Accesos.dart';
 import 'package:standby/views/Home.dart';
 import 'package:standby/views/Login.dart';
 import 'package:standby/views/MapResidencial.dart';
+import 'package:standby/views/PagoCompleto.dart';
 import 'package:standby/views/Principal.dart';
 import 'package:standby/views/RegistroUsuario.dart';
 
@@ -22,6 +23,13 @@ import 'package:standby/views/RegistroUsuario.dart';
 
 void main() async{
   Stripe.publishableKey = "pk_test_51NgIgBDxEzW2L8puKidxqRts08Lv8LUeRjdpOYolNBs7NJwtbIWEZUc1HPlalvodu6goeh6z0eCypyMsuuM7rQoH00wH1tUFZj";
+
+  List<Permission> permissions = [
+    Permission.location,
+    Permission.activityRecognition, // Asegúrate de que sea el nombre correcto del permiso de actividad física
+    Permission.notification,
+  ];
+
   //Para las notificaciones se hizo async el metodo main
   //Para ejecutar las inicializaciones de las notificaciones
   WidgetsFlutterBinding();
@@ -29,6 +37,13 @@ void main() async{
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent, // transparent status bar
   ));
+
+  await Permission.locationAlways.isDenied.then((value) {
+      if( value ){
+        Permission.locationAlways.request();
+      }
+  });
+
   await Permission.notification.isDenied.then(
     (value){
       if( value ){
@@ -89,6 +104,7 @@ class MyApp extends StatelessWidget {
         'mapa' : ( _ ) => const MapResidencial(),
         'registro_usuario' : ( _ ) => const RegistroUsuario(),
         'accesos' : ( _ ) => const Accesos(),
+        'pago_completo' : ( _ ) => const PagoCompleto(),
       },
     );
   }

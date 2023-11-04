@@ -1,6 +1,12 @@
 
+// ignore_for_file: camel_case_types
+
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:standby/shared_preferences/shared_preferences.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../helpers/alertas.dart';
 import '../model/acceso_usuario.dart';
@@ -35,10 +41,19 @@ class _AccesosRadio extends State<AccesosRadio> {
         } else {
 
           precioTotal = selectedItems.fold(0.0, (previousValue, map) => previousValue + (map['precio'] as double));
+          consultaLinksRestantes( Preferences.celularUsuario );
 
           return Column(
             children:[ 
-              _listaAccesos(context, snapshot),
+
+              const SizedBox( height: 25 ),
+
+              Text(
+                "Links restantes: ${Preferences.compartidas}",
+                style: const TextStyle( fontSize: 20 ),
+              ),
+
+              const SizedBox( height: 35 ),
 
               Text(
                 "Precio total: \$ $precioTotal MXN",
@@ -48,9 +63,10 @@ class _AccesosRadio extends State<AccesosRadio> {
               const SizedBox( height: 20 ),
 
               ( precioTotal > 0 ) 
-              ? _buttonPay( amount: precioTotal )
-              : const Text("Selecciona minimo 1 acceso")
+              ? _buttonPay( amount: precioTotal, idAccesos: selectedItems, idUsuario: widget.idUsuario )
+              : const Text("Selecciona minimo 1 acceso"),
               
+              _listaAccesos(context, snapshot),
 
             ]
           );
@@ -60,9 +76,8 @@ class _AccesosRadio extends State<AccesosRadio> {
     );
   }
 
-  SizedBox _listaAccesos(BuildContext context, AsyncSnapshot<List<AccesoUsuario>> snapshot) {
-    return SizedBox(
-              height: MediaQuery.of(context).size.height * 0.4,
+  Expanded _listaAccesos(BuildContext context, AsyncSnapshot<List<AccesoUsuario>> snapshot) {
+    return Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 children: snapshot.data!
@@ -76,7 +91,7 @@ class _AccesosRadio extends State<AccesosRadio> {
                             onChanged: (value) {
                               setState(() {
                                 if (value!) {
-                                  selectedItems.add({ "idAcceso": acceso.idAcceso, "precio" : acceso.precio });
+                                  selectedItems.add({ "idAcceso": acceso.idAcceso, "precio" : acceso.precio, 'nombre': acceso.nombre });
                                 } else {
                                   selectedItems.removeWhere((item) => item['idAcceso'] == acceso.idAcceso);
                                 }
@@ -88,7 +103,63 @@ class _AccesosRadio extends State<AccesosRadio> {
                           )
                         : ListTile(
                           leading: const Icon( Icons.check ),
-                          title: Text( acceso.direccion ),
+                          title: Text( acceso.nombre ),
+                          subtitle: Text(acceso.direccion),
+                          trailing: TextButton.icon(
+                            icon: const Icon( Icons.share ),
+                            label: const Text( "Compartir" ),
+                            onPressed: () {
+
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text("Confirmación"),
+                                    // Mensaje
+                                    content: const Text("¿Estás seguro de que quieres generar un link para compartir el acceso?"),
+
+                                    actions: [
+
+                                      TextButton(
+                                        onPressed: () async{
+                                          
+                                          final idResidencial = Preferences.idResidencial;
+                                          final idUsuario = Preferences.idUsuario;
+
+                                          //print( "Compartir id Acceso: ${acceso.idAcceso} idResidencial: $idResidencial idUsuario: $idUsuario" );
+
+                                          final authService = Provider.of<AuthService>(context, listen: false);
+
+                                          try{
+                                            
+                                            final linkCompartir = await authService.crearLinkCompartir( acceso.idAcceso, idUsuario, idResidencial );
+                                            Share.share("Direccion: ${acceso.direccion}\nGoogle Maps: https://www.google.com/maps/@${acceso.latitudCaseta},${acceso.longitudCaseta},17z/data=!3m1!4b1 \nLink de acceso: ${linkCompartir!["link"]}");
+                                          
+                                          } catch(e){
+                                            mostrarAlerta(context, "Epa", e.toString());
+                                          }
+
+                                          Navigator.of(context).pop();
+
+                                        },
+                                        child: const Text("Si"),
+                                      ),
+
+                                      TextButton(
+                                        onPressed: () {
+                                          // Acción al presionar el botón de cancelar
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text("No"),
+                                      ),
+
+                                    ],
+
+                                  );
+                                }
+                              );
+                            },
+                          )
                         )
                       )
                     )
@@ -101,22 +172,31 @@ class _AccesosRadio extends State<AccesosRadio> {
     final authService = Provider.of<AuthService>(context, listen: false);
     return await authService.getAccesosUsuario(idUsuario);
   }
+
+  Future<void> consultaLinksRestantes(String celular) async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final resp = await authService.getUserInfo(celular);
+    final body = jsonDecode(resp!);
+    //print("USUARIO ${body['compartidas']}");
+    Preferences.compartidas = body['compartidas'];
+  }
+
 }
 
+// ignore: must_be_immutable
 class _buttonPay extends StatelessWidget {
 
   final double amount;
+  final List<Map<String, dynamic>> idAccesos;
+  final String idUsuario;
 
   _buttonPay({
-    required this.amount,
+    required this.amount, required this.idAccesos, required this.idUsuario,
   });
 
 final stripeService = StripeService();
 
   Map<String, dynamic>? paymentIntent;
-
-  
-
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -128,14 +208,15 @@ final stripeService = StripeService();
           onPressed: () async {
               
             try{
-              final response = await stripeService.makePayment(
+              
+              await stripeService.makePayment(
+                context: context,
                 amount: '${ (amount * 100).floor() }', 
-                currency: "MXN"
+                numericAmount: amount,
+                currency: "MXN",
+                idAccesos: idAccesos,
+                idUsuario: idUsuario
               );
-
-              if( response.ok ){
-                print("Se hizo");
-              }
             
             } catch(e){
               mostrarAlerta(context, "Epa", e.toString());

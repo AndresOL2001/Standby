@@ -8,7 +8,7 @@ import '../model/acceso.dart';
 import '../model/acceso_usuario.dart';
 
 class AuthService extends ChangeNotifier{
-  final String _baseUrl = 'http://24.199.122.158:5000';
+  final String _baseUrl = 'http://146.190.52.172:5000';
 
 
   Future<String?> createUser( String numeroSerie, String nombreCompleto, String calle, String numeroCasa, String celular, String contrasena ) async{
@@ -167,6 +167,48 @@ class AuthService extends ChangeNotifier{
       return resp.body;
     } else {
       throw Exception('API Error');
+    }
+
+  } // fin metodo
+
+
+  Future<String?> createPago( String idAcceso, String idUsuario, double cantidad ) async{
+
+    final Map<String, dynamic> pago ={
+      'idAcceso': idAcceso,
+      'idUsuario': idUsuario,
+      'cantidad': cantidad
+    };
+
+    final url = Uri.parse('$_baseUrl/api/pagos');
+    final headers = {"Content-Type": "application/json;charset=UTF-8"};
+
+    final resp = await http.post(url, headers: headers, body: json.encode(pago));
+
+    if (resp.statusCode == 200) {
+      return null;
+    } else {
+      return resp.body;
+    }
+
+  } // fin metodo
+
+  Future<Map<String, dynamic>?> crearLinkCompartir( String idAcceso, String idUsuario, String idResidencial ) async{
+
+    final url = Uri.parse('$_baseUrl/api/accesos/compartir/$idUsuario/$idResidencial/$idAcceso');
+    final headers = {"Content-Type": "application/json;charset=UTF-8"};
+
+    final resp = await http.get(url, headers: headers);
+
+    print("RESPONSE ${resp.body}");
+
+    if (resp.statusCode == 200) {
+      return null;
+    } else {
+      final body = jsonDecode(resp.body);
+
+      // Retorna la información del body
+      return body;
     }
 
   } // fin metodo

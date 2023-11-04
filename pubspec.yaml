@@ -44,11 +44,12 @@ dependencies:
   flutter_background_service: ^2.4.6
   flutter_background_service_ios: ^2.4.0
   flutter_background_service_android: ^3.0.3
-  permission_handler: ^10.2.0
+  permission_handler: ^10.0.2
   provider: ^6.0.5
   http: ^0.13.4
   activity_recognition_flutter: ^4.2.0
   flutter_stripe: ^9.3.0
+  share_plus: ^7.1.0
   #flutter_activity_recognition: ^2.0.0
   #flutter_motion: ^0.0.3
   #pedometer: ^3.0.0

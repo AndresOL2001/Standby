@@ -152,4 +152,73 @@ class StripeService{
 
   } // fin metodo
 
+  // ----------------------------------------- COOMPRAR LINKS -----------------------------------------
+
+    Future<String?> pagoLinks( String idUsuario ) async{
+
+    final url = Uri.parse('http://146.190.52.172/api/accesos/compartir/comprar/$idUsuario');
+    final headers = {"Content-Type": "application/json;charset=UTF-8"};
+
+    final resp = await http.post(url, headers: headers);
+
+    if (resp.statusCode == 200){
+      return null;
+    } else {
+      return resp.body;
+    }
+
+  } // fin metodo
+
+  Future<StripeCustomResponse> makePaymentLinks({
+    required BuildContext context,
+    required String amount,
+    required double numericAmount,
+    required String currency,
+    required String idUsuario
+  }) async{
+    try {
+      paymentIntent = await crearPaymentIntent( amount: amount, currency: currency );
+
+      var gpay = fs.PaymentSheetGooglePay(
+        merchantCountryCode: "MX",
+        currencyCode: currency,
+        testEnv: true
+      );
+      await fs.Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: fs.SetupPaymentSheetParameters(
+          paymentIntentClientSecret: paymentIntent!["client_secret"],
+          style: ThemeMode.dark,
+          merchantDisplayName: "Stand By",
+          googlePay: gpay,
+        )
+      ).then((value) => {});
+
+      //displayPaymentSheet();
+
+      await fs.Stripe.instance.presentPaymentSheet().then(( (value) => {
+          pagoLinks(idUsuario),
+          print("$idUsuario"),
+
+          showDialog(
+            context: context, 
+            builder: (BuildContext context){
+              return const  AlertDialog(
+                title: Text("OK"),
+                content: Text("Los links seran agregados en breve."),
+              );
+            }
+          )
+
+      }));
+
+      return StripeCustomResponse(ok: true);
+
+
+    } catch (e) {
+      print("ERROR ${e.toString()}");
+      return StripeCustomResponse(ok: false, msg: e.toString());
+    }
+
+  }
+
 }
